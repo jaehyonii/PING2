@@ -55,8 +55,9 @@ button {
 }
 
 .logo {
+  width: 60.188px;
   height: 25px;
-  width: auto;
+  object-fit: contain;
 }
 
 .notify {
@@ -97,6 +98,17 @@ button {
   padding-bottom: 16px;
 }
 
+.feed-status {
+  margin: 12px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.feed-status.is-error {
+  color: var(--pink);
+}
+
 .feed-card {
   display: flex;
   flex-direction: column;
@@ -118,8 +130,8 @@ button {
 }
 
 .avatar {
-  width: 62px;
-  height: 62px;
+  width: 31px;
+  height: 31px;
   border-radius: 50%;
   overflow: hidden;
   flex-shrink: 0;
@@ -310,4 +322,102 @@ button {
   .page {
     max-width: 100%;
   }
+}
+
+.camera-page {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  max-width: 375px;
+  margin: 0 auto;
+  position: relative;
+  padding: 56px 0 48px;
+}
+
+.camera-back {
+  position: absolute;
+  top: 56px;
+  left: 20px;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.camera-back img {
+  width: 100%;
+  height: 100%;
+}
+
+.camera-logo-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 25px;
+}
+
+.camera-logo {
+  width: 60.188px;
+  height: 25px;
+  object-fit: contain;
+}
+
+.camera-preview {
+  margin-top: 48px;
+  height: 507px;
+  background: #ffffff;
+  border-radius: 15px;
+  overflow: hidden;
+  position: relative;
+}
+
+.camera-preview-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(18, 18, 18, 0.8);
+}
+
+.camera-control {
+  position: absolute;
+  bottom: 14px;
+  width: 25px;
+  height: 25px;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.camera-control img {
+  width: 100%;
+  height: 100%;
+}
+
+.camera-flash {
+  left: 32px;
+}
+
+.camera-flip {
+  right: 32px;
+  width: 24px;
+  height: 24px;
+}
+
+.camera-shutter {
+  margin: 32px auto 0;
+  width: 72px;
+  height: 72px;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.camera-shutter img {
+  width: 100%;
+  height: 100%;
 }
