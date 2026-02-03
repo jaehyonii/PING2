@@ -325,18 +325,25 @@ button {
 }
 
 .camera-page {
-  min-height: 100vh;
+  height: 100lvh;
+  min-height: 100lvh;
   background: var(--bg);
   color: var(--text);
   max-width: 375px;
   margin: 0 auto;
   position: relative;
-  padding: 56px 0 48px;
+  padding: 0;
+  overflow: hidden;
+  --camera-gap: 40px;
+  --camera-logo-height: 25px;
+  --camera-preview-width: min(375px, 100%);
+  --camera-preview-height: calc(var(--camera-preview-width) * 507 / 375);
+  --camera-logo-top: 40px;
 }
 
 .camera-back {
   position: absolute;
-  top: 56px;
+  top: var(--camera-logo-top);
   left: 20px;
   width: 32px;
   height: 32px;
@@ -352,10 +359,14 @@ button {
 }
 
 .camera-logo-wrap {
+  position: absolute;
+  top: var(--camera-logo-top);
+  left: 0;
+  right: 0;
+  height: var(--camera-logo-height);
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 25px;
 }
 
 .camera-logo {
@@ -365,8 +376,13 @@ button {
 }
 
 .camera-preview {
-  margin-top: 48px;
-  height: 507px;
+  position: absolute;
+  top: calc(var(--camera-logo-top) + var(--camera-logo-height) + var(--camera-gap));
+  left: 50%;
+  transform: translateX(-50%);
+  width: var(--camera-preview-width);
+  aspect-ratio: 375 / 507;
+  height: auto;
   background: #ffffff;
   border-radius: 15px;
   overflow: hidden;
@@ -406,18 +422,28 @@ button {
 }
 
 .camera-shutter {
-  margin: 32px auto 0;
+  position: absolute;
+  top: calc(var(--camera-logo-top) + var(--camera-logo-height) + var(--camera-gap) + var(--camera-preview-height) + var(--camera-gap));
+  left: 50%;
+  transform: translateX(-50%);
   width: 72px;
   height: 72px;
+  max-width: 72px;
+  max-height: 72px;
+  aspect-ratio: 1 / 1;
   display: grid;
   place-items: center;
   background: transparent;
   border: 0;
   padding: 0;
   cursor: pointer;
+  line-height: 0;
 }
 
 .camera-shutter img {
   width: 100%;
   height: 100%;
+  max-width: 72px;
+  max-height: 72px;
+  object-fit: contain;
 }

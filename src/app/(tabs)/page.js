@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 
 const PAGE_SIZE = 3;
 const DATA_URL = "/data/feed.json";
@@ -12,6 +13,7 @@ function getPage(allItems, pageNumber) {
 }
 
 export default function Home() {
+  const pathname = usePathname();
   const [allItems, setAllItems] = useState([]);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -74,6 +76,12 @@ export default function Home() {
       if (abortRef.current) abortRef.current.abort();
     };
   }, [fetchAll]);
+
+  useEffect(() => {
+    if (pathname === "/" && items.length === 0 && !loading) {
+      fetchAll();
+    }
+  }, [pathname, items.length, loading, fetchAll]);
 
   useEffect(() => {
     function onScroll() {
