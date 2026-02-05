@@ -494,7 +494,7 @@ button {
 }
 
 .capture-page {
-  min-height: 100svh;
+  min-height: 100lvh;
   background: var(--bg);
   color: var(--text);
   max-width: 375px;
@@ -502,11 +502,18 @@ button {
   position: relative;
   padding: 0 0 24px;
   overflow: hidden;
+  --capture-logo-top: 40px;
+  --capture-logo-height: 25px;
+  --capture-caption-top: 90px;
+  --capture-preview-top: 120px;
+  --capture-preview-width: min(375px, 100%);
+  --capture-preview-height: calc(var(--capture-preview-width) * 507 / 375);
+  --capture-preview-gap-bottom: 23px;
 }
 
 .capture-back {
   position: absolute;
-  top: 63px;
+  top: var(--capture-logo-top);
   left: 20px;
   width: 32px;
   height: 32px;
@@ -524,10 +531,10 @@ button {
 
 .capture-logo-wrap {
   position: absolute;
-  top: 68px;
+  top: var(--capture-logo-top);
   left: 0;
   right: 0;
-  height: 25px;
+  height: var(--capture-logo-height);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -542,7 +549,7 @@ button {
 
 .capture-caption {
   position: absolute;
-  top: 140px;
+  top: var(--capture-caption-top);
   left: 20px;
   right: 20px;
   z-index: 1;
@@ -569,12 +576,12 @@ button {
 
 .capture-photo-card {
   position: absolute;
-  top: 171px;
+  top: var(--capture-preview-top);
   left: 0;
   right: 0;
   margin: 0 auto;
-  width: min(375px, 100%);
-  height: 507px;
+  width: var(--capture-preview-width);
+  height: var(--capture-preview-height);
   background: var(--text);
   border-radius: 15px;
   overflow: hidden;
@@ -614,7 +621,7 @@ button {
 
 .capture-action {
   position: absolute;
-  top: 697px;
+  top: calc(var(--capture-preview-top) + var(--capture-preview-height) + var(--capture-preview-gap-bottom));
   left: 50%;
   transform: translateX(-50%);
   width: 263px;
