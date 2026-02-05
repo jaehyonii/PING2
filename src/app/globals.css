@@ -180,7 +180,7 @@ button {
   overflow: hidden;
 }
 
-.card-image > img {
+.card-image>img {
   width: 100%;
   height: auto;
   display: block;
@@ -278,7 +278,7 @@ button {
 }
 
 .tab-center {
-  transform: translateY(-12px);
+  /* transform: translateY(-12px); Removed to keep it aligned within the bar */
 }
 
 .tab-center-icon {

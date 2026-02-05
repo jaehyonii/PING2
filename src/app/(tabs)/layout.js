@@ -16,13 +16,13 @@ const tabs = [
   },
   {
     href: "/camera/shot",
-    label: "카메라",
+    label: "",
     icon: "/figma/nav-camera.svg",
     isCenter: true,
   },
   {
     href: "/leaderboard",
-    label: "리더보드",
+    label: "리워드",
     icon: "/figma/nav-leaderboard.svg",
   },
   {
@@ -62,7 +62,7 @@ export default function TabsLayout({ children }) {
                   <img src={tab.icon} alt="" />
                 </span>
               )}
-              <span className="tab-label">{tab.label}</span>
+              {tab.label && <span className="tab-label">{tab.label}</span>}
             </Link>
           );
         })}
