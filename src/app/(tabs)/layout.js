@@ -15,7 +15,7 @@ const tabs = [
     icon: "/figma/nav-events.svg",
   },
   {
-    href: "/camera",
+    href: "/camera/shot",
     label: "카메라",
     icon: "/figma/nav-camera.svg",
     isCenter: true,

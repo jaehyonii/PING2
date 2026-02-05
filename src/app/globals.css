@@ -492,3 +492,172 @@ button {
   max-height: 72px;
   object-fit: contain;
 }
+
+.capture-page {
+  min-height: 100svh;
+  background: var(--bg);
+  color: var(--text);
+  max-width: 375px;
+  margin: 0 auto;
+  position: relative;
+  padding: 0 0 24px;
+  overflow: hidden;
+}
+
+.capture-back {
+  position: absolute;
+  top: 63px;
+  left: 20px;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.capture-back img {
+  width: 100%;
+  height: 100%;
+}
+
+.capture-logo-wrap {
+  position: absolute;
+  top: 68px;
+  left: 0;
+  right: 0;
+  height: 25px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+}
+
+.capture-logo {
+  width: 60.188px;
+  height: 25px;
+  object-fit: contain;
+}
+
+.capture-caption {
+  position: absolute;
+  top: 140px;
+  left: 20px;
+  right: 20px;
+  z-index: 1;
+}
+
+.capture-caption-input {
+  width: 100%;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  resize: none;
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1;
+  font-family: inherit;
+  outline: none;
+}
+
+.capture-caption-input::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+
+.capture-photo-card {
+  position: absolute;
+  top: 171px;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: min(375px, 100%);
+  height: 507px;
+  background: var(--text);
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+.capture-photo-main {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.capture-photo-overlay {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: rgba(18, 18, 18, 0.8);
+}
+
+.capture-photo-thumb {
+  position: absolute;
+  top: 20px;
+  left: 14px;
+  width: 107px;
+  height: 144px;
+  border-radius: 15px;
+  border: 2px solid #000000;
+  background: #f3f3f3;
+  overflow: hidden;
+}
+
+.capture-photo-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.capture-action {
+  position: absolute;
+  top: 697px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 263px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+  z-index: 1;
+}
+
+.capture-action-note {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--muted);
+}
+
+.capture-action-button {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.capture-action-button img {
+  width: 27px;
+  height: 27px;
+}
+
+.capture-back:focus-visible,
+.capture-action-button:focus-visible,
+.capture-caption-input:focus-visible {
+  outline: 2px solid var(--pink);
+  outline-offset: 4px;
+  border-radius: 8px;
+}

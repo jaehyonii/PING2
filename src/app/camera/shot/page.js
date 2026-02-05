@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { FaceDetector, FilesetResolver } from "@mediapipe/tasks-vision";
 import { useEffect, useRef, useState } from "react";
@@ -60,7 +60,7 @@ export default function CameraPage() {
       }
 
       if (!navigator?.mediaDevices?.getUserMedia) {
-        setErrorMessage("이 브라우저는 카메라를 지원하지 않아요.");
+        setErrorMessage("브라우저가 카메라를 지원하지 않아요.");
         return;
       }
 
@@ -80,7 +80,7 @@ export default function CameraPage() {
 
         if (video) {
           video.srcObject = stream;
-          await video.play().catch(() => { });
+          await video.play().catch(() => {});
           setIsReady(true);
         }
       } catch (error) {
