@@ -389,10 +389,55 @@ button {
   position: relative;
 }
 
+.camera-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #000000;
+}
+
+.camera-video.is-mirrored {
+  transform: scaleX(-1);
+}
+
+.camera-mask-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.camera-mask-canvas.is-mirrored {
+  transform: scaleX(-1);
+}
+
+.camera-preview-status {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  font-size: 13px;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 3;
+}
+
+.camera-preview-status.is-error {
+  color: var(--pink);
+  background: rgba(0, 0, 0, 0.6);
+}
+
 .camera-preview-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(18, 18, 18, 0.8);
+  background: rgba(18, 18, 18, 0.35);
+  z-index: 2;
 }
 
 .camera-control {
