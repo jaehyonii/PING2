@@ -4,35 +4,35 @@ const BACK_PHOTO_SRC = "/feeds/Feed_scene_01.png";
 export default function CameraCapturedPreview() {
   return (
     <div className="capture-page">
-      <button className="capture-back" type="button" aria-label="µÚ·Î">
+      <button className="capture-back" type="button" aria-label="ë’¤ë¡œê°€ê¸°">
         <img src="/figma/icon-chevron-down.svg" alt="" />
       </button>
 
       <div className="capture-logo-wrap" aria-hidden="true">
-        <img className="capture-logo" src="/figma/logo-ping.svg" alt="" />
+        <img className="capture-logo" src="/figma/logo-ping.svg" alt="Ping ë¡œê³ " />
       </div>
 
-      <label className="capture-caption" aria-label="¿À´ÃÀÇ Ping! ÇÑ ÁÙ Ãß°¡ÇÏ±â">
+      <label className="capture-caption" aria-label="ì˜¤ëŠ˜ì˜ Ping! í•œ ì¤„ ì¶”ê°€í•˜ê¸°">
         <textarea
           className="capture-caption-input"
-          placeholder="¿À´ÃÀÇ Ping! ÇÑ ÁÙ Ãß°¡ÇÏ±â¡¦"
+          placeholder="ì˜¤ëŠ˜ì˜ Ping! í•œ ì¤„ ì¶”ê°€í•˜ê¸°..."
           rows={1}
         />
       </label>
 
-      <section className="capture-photo-card" aria-label="ÃÔ¿µÇÑ »çÁø ¹Ì¸®º¸±â">
-        <img className="capture-photo-main" src={BACK_PHOTO_SRC} alt="ÈÄ¸é »çÁø" />
+      <section className="capture-photo-card" aria-label="ì˜¤ëŠ˜ì˜ Ping! ì‚¬ì§„">
+        <img className="capture-photo-main" src={BACK_PHOTO_SRC} alt="ë°°ê²½ ì‚¬ì§„" />
         <div className="capture-photo-overlay">
           <div className="capture-photo-thumb">
-            <img src={FRONT_PHOTO_SRC} alt="Àü¸é »çÁø" />
+            <img src={FRONT_PHOTO_SRC} alt="ì „ë©´ ì‚¬ì§„" />
           </div>
         </div>
       </section>
 
       <div className="capture-action">
-        <p className="capture-action-note">¿À´ÃÀÇ Ping!À» °Ô½ÃÇÏ¸é Ping Point°¡ ½×¿©¿ä.</p>
+        <p className="capture-action-note">ì˜¤ëŠ˜ì˜ Ping!ì„ ê³µìœ í•˜ë©´ Ping Pointê°€ ìŒ“ì—¬ìš”.</p>
         <button className="capture-action-button" type="button">
-          <span>Ping! ¿Ã¸®±â</span>
+          <span>Ping! ì˜¬ë¦¬ê¸°</span>
           <img src="/figma/icon-sand.svg" alt="" />
         </button>
       </div>
