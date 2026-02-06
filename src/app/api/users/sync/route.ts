@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     const profileUrl = body.profilePictureUrl?.trim() || null;
     console.log("Syncing user:", { walletAddress, nickname, profileUrl });
     
-    const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseUrl = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "").replace(/\/+$/, "");
     const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl || !supabaseServiceRoleKey) {
@@ -38,14 +38,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const commonHeaders = {
+      "Content-Type": "application/json",
+      apikey: supabaseServiceRoleKey,
+      Authorization: `Bearer ${supabaseServiceRoleKey}`,
+      Prefer: "resolution=ignore-duplicates,return=minimal",
+      "Content-Profile": "public",
+      "Accept-Profile": "public",
+    };
+
     const response = await fetch(`${supabaseUrl}/rest/v1/users?on_conflict=wallet_address`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        apikey: supabaseServiceRoleKey,
-        Authorization: `Bearer ${supabaseServiceRoleKey}`,
-        Prefer: "resolution=ignore-duplicates,return=minimal",
-      },
+      headers: commonHeaders,
       body: JSON.stringify([
         {
           wallet_address: walletAddress,
@@ -60,6 +64,26 @@ export async function POST(req: NextRequest) {
       console.log("Supabase insert failed:", errorText);
       return NextResponse.json(
         { status: "error", message: "Supabase insert failed", detail: errorText },
+        { status: 500 }
+      );
+    }
+
+    const pointsResponse = await fetch(`${supabaseUrl}/rest/v1/points?on_conflict=wallet_address`, {
+      method: "POST",
+      headers: commonHeaders,
+      body: JSON.stringify([
+        {
+          wallet_address: walletAddress,
+          ping_point: 0,
+        },
+      ]),
+    });
+
+    if (!pointsResponse.ok) {
+      const errorText = await pointsResponse.text();
+      console.log("Supabase points insert failed:", errorText);
+      return NextResponse.json(
+        { status: "error", message: "Supabase points insert failed", detail: errorText },
         { status: 500 }
       );
     }
