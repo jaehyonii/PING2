@@ -6,11 +6,11 @@ import { useParams } from "next/navigation";
 import PingModal from "../../../../../components/PingModal";
 import PingToast from "../../../../../components/PingToast";
 
-const DATA_URL = "/data/feed.json";
+const DATA_URL = "/api/feeds";
 
 export default function FeedDetailPage() {
     const params = useParams();
-    const { id } = params;
+    const routeId = Array.isArray(params?.id) ? params.id[0] : params?.id;
     const [feedItem, setFeedItem] = useState(null);
     const [loading, setLoading] = useState(true);
     const [isPingModalOpen, setIsPingModalOpen] = useState(false);
@@ -19,11 +19,10 @@ export default function FeedDetailPage() {
     useEffect(() => {
         async function fetchFeed() {
             try {
-                const res = await fetch(DATA_URL);
+                const res = await fetch(`${DATA_URL}/${encodeURIComponent(routeId)}`);
                 if (!res.ok) throw new Error("Failed to load feed");
                 const data = await res.json();
-                const item = data.find((i) => i.id === parseInt(id));
-                setFeedItem(item);
+                setFeedItem(data?.feed ?? null);
             } catch (err) {
                 console.error(err);
             } finally {
@@ -31,10 +30,10 @@ export default function FeedDetailPage() {
             }
         }
 
-        if (id) {
+        if (routeId) {
             fetchFeed();
         }
-    }, [id]);
+    }, [routeId]);
 
     if (loading) return <div className="text-white text-center mt-10">Loading...</div>;
     if (!feedItem) return <div className="text-white text-center mt-10">Feed not found</div>;
@@ -136,7 +135,7 @@ export default function FeedDetailPage() {
                 isOpen={isPingModalOpen}
                 onClose={() => setIsPingModalOpen(false)}
                 onConfirm={() => {
-                    console.log(`Ping sent to ${id}`);
+                    console.log(`Ping sent to ${routeId}`);
                     setIsPingModalOpen(false);
                     setShowPingToast(true);
                     setTimeout(() => setShowPingToast(false), 3000);

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
@@ -7,7 +7,7 @@ import PingModal from "../../../../components/PingModal";
 import PingToast from "../../../../components/PingToast";
 
 const PAGE_SIZE = 3;
-const DATA_URL = "/data/feed.json";
+const DATA_URL = "/api/feeds";
 
 function getPage(allItems, pageNumber) {
   const start = (pageNumber - 1) * PAGE_SIZE;
@@ -15,7 +15,7 @@ function getPage(allItems, pageNumber) {
   return allItems.slice(start, end);
 }
 
-export default function Home() {
+export default function FeedAllPage() {
   const pathname = usePathname();
   const [allItems, setAllItems] = useState([]);
   const [items, setItems] = useState([]);
@@ -47,7 +47,7 @@ export default function Home() {
       const res = await fetch(`${DATA_URL}?t=${Date.now()}`, { signal: controller.signal });
       if (!res.ok) throw new Error("Failed to load feed");
       const data = await res.json();
-      const list = Array.isArray(data) ? data : [];
+      const list = Array.isArray(data?.feeds) ? data.feeds : [];
       setAllItems(list);
 
       const firstPage = getPage(list, 1);
@@ -122,7 +122,11 @@ export default function Home() {
 
       <section className="feed">
         {items.map((card) => (
-          <Link href={`/feed/detail/${card.id}`} key={`${card.id}-${card.image}`} className="block">
+          <Link
+            href={`/feed/detail/${encodeURIComponent(card.id)}`}
+            key={`${card.id}-${card.image}`}
+            className="block"
+          >
             <article className="feed-card">
               <header className="card-header">
                 <div className="card-user">

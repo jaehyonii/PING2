@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -8,7 +8,7 @@ import RewardIcon from "../../components/icons/RewardIcon";
 
 const tabs = [
   {
-    href: "/",
+    href: "/feed/all",
     label: "홈",
     Icon: HomeIcon,
     iconClass: "tab-icon-home",
@@ -20,7 +20,7 @@ const tabs = [
     iconClass: "tab-icon-events",
   },
   {
-    href: "/camera/shot",
+    href: "/camera/select",
     label: "",
     icon: "/figma/nav/nav-camera.svg",
     iconClass: "tab-icon-camera",

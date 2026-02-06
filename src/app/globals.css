@@ -1,4 +1,4 @@
-﻿@import "tailwindcss";
+@import "tailwindcss";
 /* Force rebuild */
 
 :root {
@@ -1388,6 +1388,9 @@ button {
 }
 
 .events-detail-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-top: 22px;
   width: 100%;
   height: 43px;
@@ -1398,6 +1401,7 @@ button {
   font-size: 16px;
   font-weight: 600;
   line-height: 1;
+  text-decoration: none;
   cursor: pointer;
 }
 
@@ -1581,6 +1585,205 @@ button {
 
 .events-detail-back:focus-visible,
 .events-detail-cta:focus-visible {
+  outline: 2px solid var(--pink);
+  outline-offset: 2px;
+}
+
+.camera-select-page {
+  min-height: 100svh;
+  max-width: 375px;
+  margin: 0 auto;
+  padding: 0px 20px 116px;
+  background:
+    radial-gradient(140% 90% at 50% -22%, #2d2d2d 0%, #1c1c1c 35%, #141414 66%, #121212 100%),
+    #121212;
+}
+
+.camera-select-logo {
+  display: block;
+  width: 60.188px;
+  height: 25px;
+  margin: 0 auto;
+  object-fit: contain;
+}
+
+.camera-select-title {
+  margin: 24px 0 0;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1;
+  text-align: center;
+  color: var(--text);
+}
+
+.camera-select-subtitle {
+  margin: 10px 0 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.1;
+  text-align: center;
+  color: var(--muted);
+}
+
+.camera-select-search {
+  margin-top: 28px;
+  width: 100%;
+  height: 44px;
+  border: 0;
+  border-radius: 15px;
+  background: #1c1c1e;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1;
+  text-align: left;
+}
+
+.camera-select-search img {
+  width: 18px;
+  height: 18px;
+}
+
+.camera-select-filter-row {
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.camera-select-filters {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.camera-select-filter-chip {
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted);
+  padding: 4px 9px;
+  font-size: 12px;
+  font-weight: 300;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.camera-select-filter-chip.is-active {
+  background: var(--tab-accent);
+  color: var(--text);
+}
+
+.camera-select-filter-plus {
+  width: 20px;
+  height: 19px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.camera-select-filter-plus img {
+  width: 20px;
+  height: 19px;
+}
+
+.camera-select-mask-grid {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.camera-select-mask-card {
+  position: relative;
+  height: 165px;
+  border-radius: 15px;
+  overflow: hidden;
+  border: 2px solid #b7f5ff;
+  background: #1c1c1d;
+}
+
+.camera-select-mask-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.camera-select-mask-overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 51px;
+  padding: 24px 8px 8px;
+  backdrop-filter: blur(1px);
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.camera-select-mask-label {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+  background: linear-gradient(270deg, #b7f5ff 0%, #00889f 38.46%, #88efff 68.75%, #048a9e 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.camera-select-events {
+  margin-top: 26px;
+}
+
+.camera-select-events-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.camera-select-events-header h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--text);
+}
+
+.camera-select-events-header button {
+  width: 20px;
+  height: 19px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.camera-select-events-header button img {
+  width: 20px;
+  height: 19px;
+}
+
+.camera-select-events-list {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.camera-select-search:focus-visible,
+.camera-select-filter-chip:focus-visible,
+.camera-select-filter-plus:focus-visible,
+.camera-select-mask-card:focus-visible,
+.camera-select-events-header button:focus-visible {
   outline: 2px solid var(--pink);
   outline-offset: 2px;
 }

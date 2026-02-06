@@ -35,9 +35,9 @@ export default function EventDetailPage() {
         <p className="events-detail-copy-body">광고 1회를 시청하고, MADS PingMask로 촬영 후 업로드하세요.</p>
       </div>
 
-      <button className="events-detail-cta" type="button">
+      <Link className="events-detail-cta" href="/camera/shot?mask=mads">
         Ping! 촬영하러 가기
-      </button>
+      </Link>
 
       <section className="events-detail-rewards" aria-label="리워드">
         <p className="events-detail-section-kicker">Rewards</p>

@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const HOT_PINGS = [
   {
     image: "/figma/events/events-hot-ping-1.png",
@@ -57,10 +59,10 @@ export default function EventsAllPage() {
         에어드랍도 챙기세요.
       </p>
 
-      <button className="events-search" type="button" aria-label="이벤트 검색">
+      <Link className="events-search" href="/events/detail/1" aria-label="이벤트 검색">
         <img src="/figma/events/icon-search-muted.svg" alt="" />
         <span>참여하고 싶은 이벤트를 검색하세요!</span>
-      </button>
+      </Link>
 
       <section className="events-hot">
         <div className="events-section-head">
@@ -70,14 +72,14 @@ export default function EventsAllPage() {
 
         <div className="events-hot-grid">
           {HOT_PINGS.map((item, index) => (
-            <article className="events-hot-card" key={`hot-${index}`}>
+            <Link className="events-hot-card" href={`/events/detail/${index + 1}`} key={`hot-${index}`}>
               <img src={item.image} alt="" />
               <div className="events-hot-overlay">
                 <p className="events-hot-label">Today&apos;s Ping!</p>
                 <p className="events-hot-copy">{item.lines[0]}</p>
                 <p className="events-hot-copy">{item.lines[1]}</p>
               </div>
-            </article>
+            </Link>
           ))}
         </div>
       </section>
@@ -89,8 +91,8 @@ export default function EventsAllPage() {
         </div>
 
         <div className="events-list">
-          {RECOMMENDED_EVENTS.map((item) => (
-            <button className="events-item" type="button" key={`${item.tag}-${item.title}`}>
+          {RECOMMENDED_EVENTS.map((item, index) => (
+            <Link className="events-item" href={`/events/detail/${index + 1}`} key={`${item.tag}-${item.title}`}>
               <span className="events-item-icon">
                 <img src={item.icon} alt="" />
               </span>
@@ -102,7 +104,7 @@ export default function EventsAllPage() {
                 <span className="events-item-meta">Ping Point +35P / AirDrop Pool +1,000P</span>
               </span>
               <img className="events-item-next" src="/figma/events/icon-next-ltr.svg" alt="" />
-            </button>
+            </Link>
           ))}
         </div>
       </section>

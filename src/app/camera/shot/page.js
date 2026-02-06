@@ -1,10 +1,20 @@
 "use client";
 
 import { FaceDetector, FilesetResolver } from "@mediapipe/tasks-vision";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const DEFAULT_MASK_SRC = "/mask/Popcat.svg";
+const FALLBACK_MASK_SRC = "/mask/mads.svg";
+const MASK_SRC_BY_KEY = {
+  mads: "/mask/mads.svg",
+  credit: "/mask/credit.svg",
+  credits: "/mask/credit.svg",
+  world: "/mask/worldcoin.svg",
+  worldcoin: "/mask/worldcoin.svg",
+  giftcard: "/mask/giftcard.svg",
+  deals: "/mask/deals.svg",
+  uno: "/mask/uno.svg",
+};
 const FACE_MODEL_URL =
   "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/latest/blaze_face_short_range.tflite";
 const VISION_WASM_BASE = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm";
@@ -86,6 +96,7 @@ const waitForVideoReady = (video, timeoutMs = CAMERA_READY_TIMEOUT_MS) =>
 
 export default function CameraPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const videoRef = useRef(null);
   const maskCanvasRef = useRef(null);
   const streamRef = useRef(null);
@@ -101,6 +112,13 @@ export default function CameraPage() {
   const [statusMessage, setStatusMessage] = useState("");
   const [isFrontCamera, setIsFrontCamera] = useState(true);
   const [isSequenceRunning, setIsSequenceRunning] = useState(false);
+
+  const normalizeMaskKey = useCallback(
+    (rawMask) => (rawMask || "").toLowerCase().trim().replace(/[\s_-]+/g, ""),
+    []
+  );
+  const requestedMask = searchParams.get("mask");
+  const DEFAULT_MASK_SRC = MASK_SRC_BY_KEY[normalizeMaskKey(requestedMask)] ?? FALLBACK_MASK_SRC;
 
   const clearMaskCanvas = useCallback(() => {
     const canvas = maskCanvasRef.current;
@@ -242,6 +260,40 @@ export default function CameraPage() {
     image.onload = () => {
       maskImageRef.current = image;
     };
+  }, [DEFAULT_MASK_SRC]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const warmupDetector = async () => {
+      if (detectorRef.current) return;
+
+      try {
+        const vision = await FilesetResolver.forVisionTasks(VISION_WASM_BASE);
+        if (cancelled) return;
+
+        const detector = await FaceDetector.createFromOptions(vision, {
+          baseOptions: { modelAssetPath: FACE_MODEL_URL },
+          runningMode: "VIDEO",
+          minDetectionConfidence: 0.6,
+        });
+        if (cancelled) {
+          detector.close();
+          return;
+        }
+
+        detectorRef.current = detector;
+      } catch (error) {
+        if (process.env.NODE_ENV !== "production") {
+          console.warn("Face detector initialization failed:", error);
+        }
+      }
+    };
+
+    warmupDetector();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -252,7 +304,6 @@ export default function CameraPage() {
     }
 
     let cancelled = false;
-    let detector = null;
     let animationId = null;
     let lastDetectAt = 0;
 
@@ -282,6 +333,7 @@ export default function CameraPage() {
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+      const detector = detectorRef.current;
       if (detector && video.videoWidth && video.videoHeight) {
         const now = performance.now();
         if (now - lastDetectAt >= DETECT_INTERVAL_MS) {
@@ -297,13 +349,15 @@ export default function CameraPage() {
           if (!box) continue;
 
           const size = Math.max(box.width, box.height) * 1.2;
-          const centerX = box.originX + box.width / 2;
+          const rawCenterX = box.originX + box.width / 2;
+          const centerX = isFrontCamera ? canvas.width - rawCenterX : rawCenterX;
           const centerY = box.originY + box.height / 2;
           const angle = getRollAngle(detection);
+          const drawAngle = isFrontCamera ? -angle : angle;
 
           ctx.save();
           ctx.translate(centerX, centerY);
-          ctx.rotate(angle);
+          ctx.rotate(drawAngle);
           ctx.drawImage(maskImage, -size / 2, -size / 2, size, size);
           ctx.restore();
         }
@@ -313,41 +367,13 @@ export default function CameraPage() {
       detectorRafRef.current = animationId;
     };
 
-    const setup = async () => {
-      try {
-        const vision = await FilesetResolver.forVisionTasks(VISION_WASM_BASE);
-        if (cancelled) return;
-
-        detector = await FaceDetector.createFromOptions(vision, {
-          baseOptions: { modelAssetPath: FACE_MODEL_URL },
-          runningMode: "VIDEO",
-          minDetectionConfidence: 0.6,
-        });
-        if (cancelled) {
-          detector.close();
-          return;
-        }
-
-        detectorRef.current = detector;
-        renderLoop();
-      } catch (error) {
-        if (process.env.NODE_ENV !== "production") {
-          console.warn("Face detector initialization failed:", error);
-        }
-      }
-    };
-
-    setup();
+    renderLoop();
 
     return () => {
       cancelled = true;
       if (animationId) cancelAnimationFrame(animationId);
       detectorRafRef.current = null;
       lastDetectionsRef.current = [];
-
-      if (detector?.close) detector.close();
-      if (detectorRef.current === detector) detectorRef.current = null;
-
       clearMaskCanvas();
     };
   }, [clearMaskCanvas, isFrontCamera, isReady]);
@@ -380,11 +406,17 @@ export default function CameraPage() {
     if (!ctx) return null;
 
     if (mirror) {
+      // Mirror only the camera frame to match selfie preview.
+      // Mask canvas already uses mirrored coordinates, so it must be composited
+      // without this transform to keep original mask orientation.
+      ctx.save();
       ctx.translate(canvas.width, 0);
       ctx.scale(-1, 1);
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      ctx.restore();
+    } else {
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     }
-
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
     if (includeMask && maskCanvasRef.current) {
       ctx.drawImage(maskCanvasRef.current, 0, 0, canvas.width, canvas.height);
@@ -460,7 +492,7 @@ export default function CameraPage() {
 
         <canvas
           ref={maskCanvasRef}
-          className={`camera-mask-canvas${isFrontCamera ? " is-mirrored" : ""}`}
+          className="camera-mask-canvas"
           aria-hidden="true"
         />
 
