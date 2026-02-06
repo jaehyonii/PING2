@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     const walletAddress = rawWallet.toLowerCase();
     const shortWallet = walletAddress.slice(2, 8);
     const nickname = body.username?.trim() || `user-${shortWallet}`;
-    const profileUrl = body.profilePictureUrl?.trim() || null;
+    const profileUrl = body.profilePictureUrl?.trim() || '/profiles/profile-default.jpg';
     console.log("Syncing user:", { walletAddress, nickname, profileUrl });
     
     const supabaseUrl = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "").replace(/\/+$/, "");
