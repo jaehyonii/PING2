@@ -484,7 +484,7 @@ export default function CameraPage() {
 
         <div className="camera-preview-overlay">
           <button className="camera-control camera-flash" type="button" aria-label="플래시 끄기">
-            <img src="/figma/icon-flash-off.svg" alt="" />
+            <img src="/figma/camera/shot/icon-flash-off.svg" alt="" />
           </button>
           <button
             className="camera-control camera-flip"
@@ -493,7 +493,7 @@ export default function CameraPage() {
             onClick={handleFlipCamera}
             disabled={isSequenceRunning}
           >
-            <img src="/figma/icon-flip-camera.svg" alt="" />
+            <img src="/figma/camera/shot/icon-flip-camera.svg" alt="" />
           </button>
         </div>
       </div>
@@ -505,7 +505,7 @@ export default function CameraPage() {
         onClick={handleShutter}
         disabled={!isReady || isSequenceRunning}
       >
-        <img src="/figma/camera-shutter.svg" alt="" />
+        <img src="/figma/camera/shot/camera-shutter.svg" alt="" />
       </button>
     </div>
   );

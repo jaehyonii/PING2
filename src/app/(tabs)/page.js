@@ -107,7 +107,7 @@ export default function Home() {
           친구들
         </button>
         <button className="notify" type="button" aria-label="알림">
-          <img src="/figma/icon-bell.svg" alt="" />
+          <img src="/figma/home/icon-bell.svg" alt="" />
         </button>
       </div>
 
@@ -125,7 +125,7 @@ export default function Home() {
                 </div>
               </div>
               <button className="card-menu" type="button" aria-label="더보기">
-                <img src="/figma/icon-meatball.svg" alt="" />
+                <img src="/figma/home/icon-meatball.svg" alt="" />
               </button>
             </header>
             <div className="card-image">
@@ -135,10 +135,10 @@ export default function Home() {
               </div>
               <button className="ping-button" type="button" aria-label="핑 보내기">
                 <span className="ping-glow" aria-hidden="true">
-                  <img src="/figma/ping-glow.svg" alt="" />
+                  <img src="/figma/home/ping-glow.svg" alt="" />
                 </span>
                 <span className="ping-core">
-                  <img src="/figma/ping-core.png" alt="" />
+                  <img src="/figma/home/ping-core.png" alt="" />
                 </span>
               </button>
             </div>

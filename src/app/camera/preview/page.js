@@ -59,7 +59,7 @@ export default function CameraCapturedPreview() {
         <p className="capture-action-note">오늘의 Ping!을 게시하면 Ping Point가 쌓여요.</p>
         <button className="capture-action-button" type="button">
           <span>Ping! 올리기</span>
-          <img src="/figma/icon-sand.svg" alt="" />
+          <img src="/figma/camera/preview/icon-sand.svg" alt="" />
         </button>
       </div>
     </div>

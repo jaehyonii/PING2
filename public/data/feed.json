@@ -3,7 +3,7 @@
     "id": 1,
     "user": "coinlover1234",
     "meta": "Base Builder Sprint · Base · 집계 마감 D-1",
-    "avatar": "/figma/avatar-default.png",
+    "avatar": "/figma/home/avatar-default.png",
     "image": "/feeds/Feed_scene_01.png",
     "overlay": "/feeds/Feed_selfie_01.png"
   },
@@ -11,7 +11,7 @@
     "id": 2,
     "user": "PingintheBlock",
     "meta": "KBW Booth Mission · Optimism · 1시간 42분 남음",
-    "avatar": "/figma/avatar-default.png",
+    "avatar": "/figma/home/avatar-default.png",
     "image": "/feeds/Feed_scene_02.png",
     "overlay": "/feeds/Feed_selfie_02.png"
   },
@@ -19,7 +19,7 @@
     "id": 3,
     "user": "coinlover1234",
     "meta": "Momentum DEX Screenshot Quest · Arbitrum · 2시간 남음",
-    "avatar": "/figma/avatar-default.png",
+    "avatar": "/figma/home/avatar-default.png",
     "image": "/feeds/Feed_scene_03.png",
     "overlay": "/feeds/Feed_selfie_03.png"
   },
@@ -27,7 +27,7 @@
     "id": 4,
     "user": "moonhunter",
     "meta": "ZK Quest · Polygon · 3시간 남음",
-    "avatar": "/figma/avatar-default.png",
+    "avatar": "/figma/home/avatar-default.png",
     "image": "/feeds/Feed_scene_04.png",
     "overlay": "/feeds/Feed_selfie_04.png"
   },
@@ -35,7 +35,7 @@
     "id": 5,
     "user": "alpha123",
     "meta": "Airdrop Mission · Base · 오늘 마감",
-    "avatar": "/figma/avatar-default.png",
+    "avatar": "/figma/home/avatar-default.png",
     "image": "/feeds/Feed_scene_05.png",
     "overlay": "/feeds/Feed_selfie_05.png"
   },
@@ -43,7 +43,7 @@
     "id": 6,
     "user": "blockbuilder",
     "meta": "Testnet Sprint · Arbitrum · 5시간 남음",
-    "avatar": "/figma/avatar-default.png",
+    "avatar": "/figma/home/avatar-default.png",
     "image": "/feeds/Feed_scene_06.png",
     "overlay": "/feeds/Feed_selfie_06.png"
   },
@@ -51,7 +51,7 @@
     "id": 7,
     "user": "optimist",
     "meta": "Onchain Challenge · Optimism · D-2",
-    "avatar": "/figma/avatar-default.png",
+    "avatar": "/figma/home/avatar-default.png",
     "image": "/feeds/Feed_scene_01.png",
     "overlay": "/feeds/Feed_selfie_01.png"
   },
@@ -59,7 +59,7 @@
     "id": 8,
     "user": "l2max",
     "meta": "Bridge Task · Base · D-3",
-    "avatar": "/figma/avatar-default.png",
+    "avatar": "/figma/home/avatar-default.png",
     "image": "/feeds/Feed_scene_02.png",
     "overlay": "/feeds/Feed_selfie_02.png"
   },
@@ -67,7 +67,7 @@
     "id": 9,
     "user": "coredev",
     "meta": "Hackathon Check-in · ETH · D-5",
-    "avatar": "/figma/avatar-default.png",
+    "avatar": "/figma/home/avatar-default.png",
     "image": "/feeds/Feed_scene_03.png",
     "overlay": "/feeds/Feed_selfie_03.png"
   }
