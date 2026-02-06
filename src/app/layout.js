@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import "./globals.css";
 import { MiniKitProvider } from "@worldcoin/minikit-js/minikit-provider";
 import { MiniKit, VerifyCommandInput, VerificationLevel, ISuccessResult } from '@worldcoin/minikit-js'
+import { WalletAuthInput } from '@worldcoin/minikit-js'
 
 const verifyPayload = { //: VerifyCommandInput
 	action: 'login', // This is your action ID from the Developer Portal
