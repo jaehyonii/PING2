@@ -1,18 +1,19 @@
-﻿import "./globals.css";
+import "./globals.css";
 import { MiniKitProvider } from "@worldcoin/minikit-js/minikit-provider";
 import AuthWrapper from "../components/AuthWrapper";
 
 export default async function RootLayout({ children }) {
-
 	return (
 		<html lang="ko">
-			<MiniKitProvider props={{ appId: process.env.NEXT_PUBLIC_APP_ID }}>
-				<body className="app-body">
-					<AuthWrapper>
-						{children}
-					</AuthWrapper>
-				</body>
-			</MiniKitProvider>
+			<head>
+				<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+				<script>eruda.init();</script>
+			</head>
+			<body className="app-body">
+				<MiniKitProvider props={{ appId: process.env.APP_ID }}>
+					<AuthWrapper>{children}</AuthWrapper>
+				</MiniKitProvider>
+			</body>
 		</html>
 	);
 }
