@@ -1,90 +1,74 @@
 ﻿'use client';
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import "./globals.css";
 import { MiniKitProvider } from "@worldcoin/minikit-js/minikit-provider";
 import { MiniKit, VerifyCommandInput, VerificationLevel, ISuccessResult } from '@worldcoin/minikit-js'
-import { WalletAuthInput } from '@worldcoin/minikit-js'
 
-const verifyPayload = { //: VerifyCommandInput
-	action: 'login', // This is your action ID from the Developer Portal
-	//signal: '0x12312', // Optional additional data
-	verification_level: VerificationLevel.Device, // Orb | Device
-}
-
-const handleVerify = async () => {
+const signInWithWallet = async () => {
 	if (!MiniKit.isInstalled()) {
-		return false
-	}
-	// World App will open a drawer prompting the user to confirm the operation, promise is resolved once user confirms or cancels
-	const { finalPayload } = await MiniKit.commandsAsync.verify(verifyPayload)
-	if (finalPayload.status === 'error') {
-		console.log('Error payload', finalPayload)
-		return false
+		return
 	}
 
-	// Verify the proof in the backend
-	const verifyResponse = await fetch('/api/verify', {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-		},
-		body: JSON.stringify({
-			payload: finalPayload, // as ISuccessResult, // Parses only the fields we need to verify
-			action: 'login', // This is your action ID from the Developer Portal
-			//signal: '0x12312', // Optional
-		}),
+	const res = await fetch(`/api/nonce`)
+	const { nonce } = await res.json()
+
+	const { commandPayload, finalPayload } = await MiniKit.commandsAsync.walletAuth({
+		nonce: nonce,
+		requestId: '0', // Optional
+		expirationTime: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000),
+		notBefore: new Date(new Date().getTime() - 24 * 60 * 60 * 1000),
+		statement: 'This is my statement and here is a link https://worldcoin.com/apps',
 	})
 
-	// TODO: Handle Success!
-	const verifyResponseJson = await verifyResponse.json()
-	if (verifyResponseJson.status === 200) {
-		console.log('Verification success!')
-		return true
+	if (finalPayload.status === 'error') {
+		return
+	} else {
+		const response = await fetch('/api/complete-siwe', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				payload: finalPayload,
+				nonce,
+			}),
+		})
 	}
-
-	return false
 }
 
-
 export default function RootLayout({ children }) {
-	const [status, setStatus] = useState('pending');
+	const [user, setUser] = useState(null);
 
 	useEffect(() => {
-		let cancelled = false;
-
-		const runVerify = async () => {
-			const ok = await handleVerify();
-			if (cancelled) return;
-			setStatus(ok ? 'verified' : 'error');
-		};
-
-		if (status === 'pending') {
-			runVerify();
+		const script = document.createElement('script')
+		script.src = 'https://cdn.jsdelivr.net/npm/eruda'
+		script.onload = () => {
+			window.eruda.init()
 		}
+		document.body.appendChild(script)
+	}, [])
 
-		return () => {
-			cancelled = true;
-		};
+	useEffect(() => {
+		signInWithWallet().then(() => {
+			console.log('MiniKit.user:', MiniKit.user)  // 확인용
+			setUser(MiniKit.user)
+		}).catch((err) => {
+			console.log('로그인 실패:', err)
+		});
 	}, []);
 
 	return (
 		<html lang="ko">
 			<MiniKitProvider>
 				<body className="app-body">
-					{status === 'verified' ? (
-						children
-					) : status === 'error' ? (
-						<main className="page">
-							<section className="feed-status is-error" role="alert">
-								인증에 실패했어요. 잠시 후 다시 시도해주세요.
-							</section>
-						</main>
+					{user ? (
+						<>
+							{children}
+						</>
 					) : (
 						<main className="page">
-							<section className="feed-status" role="status" aria-live="polite">
-								인증을 확인하고 있어요...
-							</section>
+							<section className="feed-status">로그인 하세요.</section>
 						</main>
 					)}
 				</body>
