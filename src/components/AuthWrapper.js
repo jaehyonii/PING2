@@ -51,13 +51,13 @@ export default function AuthWrapper({ children }) {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [showStartScreen, setShowStartScreen] = useState(true);
 
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setShowStartScreen(false);
-        }, 3000);
+    // useEffect(() => {
+    //     const timer = setTimeout(() => {
+    //         setShowStartScreen(false);
+    //     }, 3000);
 
-        return () => clearTimeout(timer);
-    }, []);
+    //     return () => clearTimeout(timer);
+    // }, []);
 
     useEffect(() => {
         // Only attempt sign in after StartScreen is finished and MiniKit is installed
@@ -72,9 +72,9 @@ export default function AuthWrapper({ children }) {
         }
     }, [isInstalled, showStartScreen]);
 
-    if (showStartScreen) {
-        return <StartScreen />; // Import this component at the top
-    }
+    // if (showStartScreen) {
+    //     return <StartScreen />; // Import this component at the top
+    // }
 
     if (!isInstalled) {
         // Still initializing or not in Mini App
