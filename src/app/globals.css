@@ -1,4 +1,5 @@
 ﻿@import "tailwindcss";
+/* Force rebuild */
 
 :root {
   color-scheme: dark;
@@ -47,7 +48,7 @@ button {
 .home {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 4px;
   padding: 0 20px 0;
 }
 
@@ -88,11 +89,9 @@ button {
   gap: 16px;
   font-size: 16px;
   font-weight: 700;
-  position: sticky;
-  top: 0;
-  z-index: 8;
   background: var(--bg);
   padding: 16px 0 8px;
+  position: static;
 }
 
 .home-tab {
@@ -141,7 +140,7 @@ button {
 .card-user {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 10px;
   flex: 1;
 }
 
@@ -162,13 +161,13 @@ button {
 .card-meta {
   display: flex;
   flex-direction: column;
-  gap: 4px;
 }
 
 .card-user-name {
   margin: 0;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
+  line-height: 1.2;
 }
 
 .card-user-sub {
@@ -176,6 +175,7 @@ button {
   font-size: 12px;
   font-weight: 300;
   color: var(--muted);
+  line-height: 1.2;
 }
 
 .card-menu {
@@ -284,8 +284,20 @@ button {
   gap: 5px;
 }
 
-.tab-icon img {
+.tab-icon img,
+.tab-icon svg {
   width: 18px;
+  height: 18px;
+}
+
+.tab-icon .tab-icon-home,
+.tab-icon .tab-icon-events {
+  width: 16px;
+  height: 17.5px;
+}
+
+.tab-icon .tab-icon-leaderboard {
+  width: 20px;
   height: 18px;
 }
 
@@ -302,10 +314,6 @@ button {
 
 .tab-label {
   line-height: 1;
-}
-
-.tab-center {
-  /* transform: translateY(-12px); Removed to keep it aligned within the bar */
 }
 
 .tab-center-icon {
@@ -368,30 +376,13 @@ button {
   --camera-gap: clamp(18px, 4svh, 40px);
   --camera-bottom-pad: clamp(12px, 3svh, 24px);
   --camera-shutter-size: clamp(64px, 9svh, 72px);
-  --camera-available-height: max(
-    0px,
-    calc(
-      100svh -
-      var(--camera-logo-top) -
-      var(--camera-logo-height) -
-      var(--camera-gap) -
-      var(--camera-gap) -
-      var(--camera-shutter-size) -
-      var(--camera-bottom-pad)
-    )
-  );
-  --camera-preview-width: min(
-    375px,
-    100%,
-    calc(var(--camera-available-height) * 375 / 507)
-  );
+  --camera-available-height: max(0px,
+      calc(100svh - var(--camera-logo-top) - var(--camera-logo-height) - var(--camera-gap) - var(--camera-gap) - var(--camera-shutter-size) - var(--camera-bottom-pad)));
+  --camera-preview-width: min(375px,
+      100%,
+      calc(var(--camera-available-height) * 375 / 507));
   --camera-preview-height: calc(var(--camera-preview-width) * 507 / 375);
-  --camera-preview-top: calc(
-    var(--camera-logo-top) +
-    var(--camera-logo-height) +
-    var(--camera-gap) -
-    20px
-  );
+  --camera-preview-top: calc(var(--camera-logo-top) + var(--camera-logo-height) + var(--camera-gap) - 20px);
 }
 
 .camera-back {
@@ -562,38 +553,17 @@ button {
   --capture-logo-top: clamp(18px, calc(var(--capture-vh) * 0.05), 40px);
   --capture-gap: clamp(18px, calc(var(--capture-vh) * 0.04), 40px);
   --capture-shutter-size: clamp(64px, calc(var(--capture-vh) * 0.09), 72px);
-  --capture-preview-top: calc(
-    var(--capture-logo-top) +
-    var(--capture-logo-height) +
-    var(--capture-gap) -
-    20px
-  );
+  --capture-preview-top: calc(var(--capture-logo-top) + var(--capture-logo-height) + var(--capture-gap) - 20px);
   --capture-caption-height: 28px;
   --capture-caption-gap: clamp(12px, calc(var(--capture-vh) * 0.025), 20px);
-  --capture-caption-top: calc(
-    var(--capture-preview-top) -
-    var(--capture-caption-height) -
-    var(--capture-caption-gap)
-  );
+  --capture-caption-top: calc(var(--capture-preview-top) - var(--capture-caption-height) - var(--capture-caption-gap));
   --capture-preview-gap-bottom: var(--capture-gap);
   --capture-action-height: var(--capture-shutter-size);
-  --capture-preview-available-height: max(
-    0px,
-    calc(
-      var(--capture-vh) -
-      var(--capture-logo-top) -
-      var(--capture-logo-height) -
-      var(--capture-gap) -
-      var(--capture-gap) -
-      var(--capture-shutter-size) -
-      var(--capture-bottom-pad)
-    )
-  );
-  --capture-preview-width: min(
-    375px,
-    100%,
-    calc(var(--capture-preview-available-height) * 375 / 507)
-  );
+  --capture-preview-available-height: max(0px,
+      calc(var(--capture-vh) - var(--capture-logo-top) - var(--capture-logo-height) - var(--capture-gap) - var(--capture-gap) - var(--capture-shutter-size) - var(--capture-bottom-pad)));
+  --capture-preview-width: min(375px,
+      100%,
+      calc(var(--capture-preview-available-height) * 375 / 507));
   --capture-preview-height: calc(var(--capture-preview-width) * 507 / 375);
 }
 
@@ -1579,7 +1549,7 @@ button {
   color: var(--muted);
 }
 
-.events-detail-note p + p {
+.events-detail-note p+p {
   margin-top: 2px;
 }
 
