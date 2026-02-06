@@ -5,6 +5,31 @@ import { MiniKit } from '@worldcoin/minikit-js';
 import { useMiniKit } from "@worldcoin/minikit-js/minikit-provider";
 import StartScreen from "./StartScreen";
 
+const syncMiniKitUserToServer = async () => {
+    if (!MiniKit.user?.walletAddress) return;
+
+    try {
+        const response = await fetch("/api/users/sync", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                walletAddress: MiniKit.user.walletAddress,
+                username: MiniKit.user.username,
+                profilePictureUrl: MiniKit.user.profilePictureUrl,
+            }),
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error("Failed to sync user row via server:", errorText);
+        }
+    } catch (error) {
+        console.error("Error while syncing user row via server:", error);
+    }
+};
+
 const signInWithWallet = async () => {
     // MiniKit.isInstalled() check is handled by the hook in the component, 
     // but the function itself still can check it or assume it's called when ready.
@@ -63,9 +88,10 @@ export default function AuthWrapper({ children }) {
         // Only attempt sign in after StartScreen is finished and MiniKit is installed
         // if (!showStartScreen && isInstalled) {
         if (isInstalled) {
-            signInWithWallet().then(() => {
+            signInWithWallet().then(async () => {
                 if (MiniKit.user) {
                     setIsAuthenticated(true);
+                    await syncMiniKitUserToServer();
                 }
             }).catch((err) => {
                 console.log('로그인 실패:', err);
