@@ -13,12 +13,13 @@ const verifyPayload = { //: VerifyCommandInput
 
 const handleVerify = async () => {
 	if (!MiniKit.isInstalled()) {
-		return
+		return false
 	}
 	// World App will open a drawer prompting the user to confirm the operation, promise is resolved once user confirms or cancels
 	const { finalPayload } = await MiniKit.commandsAsync.verify(verifyPayload)
 	if (finalPayload.status === 'error') {
-		return console.log('Error payload', finalPayload)
+		console.log('Error payload', finalPayload)
+		return false
 	}
 
 	// Verify the proof in the backend
@@ -38,26 +39,53 @@ const handleVerify = async () => {
 	const verifyResponseJson = await verifyResponse.json()
 	if (verifyResponseJson.status === 200) {
 		console.log('Verification success!')
+		return true
 	}
+
+	return false
 }
 
 
 export default function RootLayout({ children }) {
-	const [isVerified, setIsVerified] = useState(false);
+	const [status, setStatus] = useState('pending');
 
 	useEffect(() => {
-		// Call the handleVerify function when the component mounts
-		if (!isVerified)
-			handleVerify().then(() => {
-				setIsVerified(true);
-			});
+		let cancelled = false;
+
+		const runVerify = async () => {
+			const ok = await handleVerify();
+			if (cancelled) return;
+			setStatus(ok ? 'verified' : 'error');
+		};
+
+		if (status === 'pending') {
+			runVerify();
+		}
+
+		return () => {
+			cancelled = true;
+		};
 	}, []);
 
 	return (
 		<html lang="ko">
 			<MiniKitProvider>
 				<body className="app-body">
-					{children}
+					{status === 'verified' ? (
+						children
+					) : status === 'error' ? (
+						<main className="page">
+							<section className="feed-status is-error" role="alert">
+								인증에 실패했어요. 잠시 후 다시 시도해주세요.
+							</section>
+						</main>
+					) : (
+						<main className="page">
+							<section className="feed-status" role="status" aria-live="polite">
+								인증을 확인하고 있어요...
+							</section>
+						</main>
+					)}
 				</body>
 			</MiniKitProvider>
 		</html>

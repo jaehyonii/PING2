@@ -325,8 +325,10 @@ button {
 }
 
 .camera-page {
-  height: 100lvh;
-  min-height: 100lvh;
+  height: 100vh;
+  min-height: 100vh;
+  height: 100svh;
+  min-height: 100svh;
   background: var(--bg);
   color: var(--text);
   max-width: 375px;
@@ -334,11 +336,29 @@ button {
   position: relative;
   padding: 0;
   overflow: hidden;
-  --camera-gap: 40px;
   --camera-logo-height: 25px;
-  --camera-preview-width: min(375px, 100%);
+  --camera-logo-top: clamp(18px, 5svh, 40px);
+  --camera-gap: clamp(18px, 4svh, 40px);
+  --camera-bottom-pad: clamp(12px, 3svh, 24px);
+  --camera-shutter-size: clamp(64px, 9svh, 72px);
+  --camera-available-height: max(
+    0px,
+    calc(
+      100svh -
+      var(--camera-logo-top) -
+      var(--camera-logo-height) -
+      var(--camera-gap) -
+      var(--camera-gap) -
+      var(--camera-shutter-size) -
+      var(--camera-bottom-pad)
+    )
+  );
+  --camera-preview-width: min(
+    375px,
+    100%,
+    calc(var(--camera-available-height) * 375 / 507)
+  );
   --camera-preview-height: calc(var(--camera-preview-width) * 507 / 375);
-  --camera-logo-top: 40px;
 }
 
 .camera-back {
@@ -471,10 +491,10 @@ button {
   top: calc(var(--camera-logo-top) + var(--camera-logo-height) + var(--camera-gap) + var(--camera-preview-height) + var(--camera-gap));
   left: 50%;
   transform: translateX(-50%);
-  width: 72px;
-  height: 72px;
-  max-width: 72px;
-  max-height: 72px;
+  width: var(--camera-shutter-size);
+  height: var(--camera-shutter-size);
+  max-width: var(--camera-shutter-size);
+  max-height: var(--camera-shutter-size);
   aspect-ratio: 1 / 1;
   display: grid;
   place-items: center;
@@ -488,27 +508,55 @@ button {
 .camera-shutter img {
   width: 100%;
   height: 100%;
-  max-width: 72px;
-  max-height: 72px;
+  max-width: var(--camera-shutter-size);
+  max-height: var(--camera-shutter-size);
   object-fit: contain;
 }
 
 .capture-page {
-  min-height: 100lvh;
+  min-height: 100vh;
+  height: 100vh;
+  min-height: 100svh;
+  height: 100svh;
   background: var(--bg);
   color: var(--text);
   max-width: 375px;
   margin: 0 auto;
   position: relative;
-  padding: 0 0 24px;
+  --capture-bottom-pad: clamp(16px, 3svh, 24px);
+  padding: 0 0 var(--capture-bottom-pad);
   overflow: hidden;
-  --capture-logo-top: 40px;
   --capture-logo-height: 25px;
-  --capture-caption-top: 90px;
-  --capture-preview-top: 120px;
-  --capture-preview-width: min(375px, 100%);
+  --capture-logo-top: clamp(18px, 5svh, 40px);
+  --capture-caption-height: 20px;
+  --capture-caption-top: calc(
+    var(--capture-logo-top) +
+    var(--capture-logo-height) +
+    clamp(16px, 4svh, 28px)
+  );
+  --capture-preview-top: calc(
+    var(--capture-caption-top) +
+    var(--capture-caption-height) +
+    clamp(16px, 4svh, 28px)
+  );
+  --capture-preview-gap-bottom: clamp(12px, 3svh, 24px);
+  --capture-action-height: clamp(56px, 9svh, 72px);
+  --capture-preview-available-height: max(
+    0px,
+    calc(
+      100svh -
+      var(--capture-preview-top) -
+      var(--capture-preview-gap-bottom) -
+      var(--capture-action-height) -
+      var(--capture-bottom-pad)
+    )
+  );
+  --capture-preview-width: min(
+    375px,
+    100%,
+    calc(var(--capture-preview-available-height) * 375 / 507)
+  );
   --capture-preview-height: calc(var(--capture-preview-width) * 507 / 375);
-  --capture-preview-gap-bottom: 23px;
 }
 
 .capture-back {
