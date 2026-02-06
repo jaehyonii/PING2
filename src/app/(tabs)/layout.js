@@ -2,18 +2,21 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import HomeIcon from "../../components/icons/HomeIcon";
+import EventsIcon from "../../components/icons/EventsIcon";
+import RewardIcon from "../../components/icons/RewardIcon";
 
 const tabs = [
   {
     href: "/",
     label: "홈",
-    icon: "/figma/nav/nav-home.svg",
+    Icon: HomeIcon,
     iconClass: "tab-icon-home",
   },
   {
     href: "/events/all",
     label: "이벤트",
-    icon: "/figma/nav/nav-events.svg",
+    Icon: EventsIcon,
     iconClass: "tab-icon-events",
   },
   {
@@ -26,7 +29,7 @@ const tabs = [
   {
     href: "/reward",
     label: "리워드",
-    icon: "/figma/nav/nav-reward.svg",
+    Icon: RewardIcon,
     iconClass: "tab-icon-reward",
   },
   {
@@ -45,7 +48,10 @@ export default function TabsLayout({ children }) {
       <main className="page">{children}</main>
       <nav className="tabbar" aria-label="Primary">
         {tabs.map((tab) => {
-          const isActive = tab.href === "/" ? pathname === "/" : pathname.startsWith(tab.href);
+          const isActive =
+            tab.href === "/"
+              ? pathname === "/" || pathname.startsWith("/feed")
+              : pathname.startsWith(tab.href);
           return (
             <Link
               key={tab.href}
@@ -63,7 +69,11 @@ export default function TabsLayout({ children }) {
                 </span>
               ) : (
                 <span className="tab-icon">
-                  <img src={tab.icon} alt="" className={tab.iconClass} />
+                  {tab.Icon ? (
+                    <tab.Icon isActive={isActive} className={tab.iconClass} />
+                  ) : (
+                    <img src={tab.icon} alt="" className={tab.iconClass} />
+                  )}
                 </span>
               )}
               {tab.label && <span className="tab-label">{tab.label}</span>}
