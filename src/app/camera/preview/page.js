@@ -8,29 +8,36 @@ const STORAGE_KEY_FRONT = "ping-camera-front";
 const STORAGE_KEY_BACK = "ping-camera-back";
 
 export default function CameraCapturedPreview() {
-  const [frontPhoto, setFrontPhoto] = useState(FRONT_PHOTO_FALLBACK);
-  const [backPhoto, setBackPhoto] = useState(BACK_PHOTO_FALLBACK);
+  const [lockedHeight] = useState(() =>
+    typeof window !== "undefined" ? window.innerHeight : null
+  );
+  const [photos, setPhotos] = useState({
+    front: FRONT_PHOTO_FALLBACK,
+    back: BACK_PHOTO_FALLBACK,
+  });
+
+  const capturePageStyle =
+    lockedHeight !== null
+      ? { "--capture-locked-height": `${lockedHeight}px` }
+      : undefined;
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    const readTimer = setTimeout(() => {
+      const storedFront = window.sessionStorage.getItem(STORAGE_KEY_FRONT);
+      const storedBack = window.sessionStorage.getItem(STORAGE_KEY_BACK);
 
-    const storedFront = window.sessionStorage.getItem(STORAGE_KEY_FRONT);
-    const storedBack = window.sessionStorage.getItem(STORAGE_KEY_BACK);
+      setPhotos({
+        front: storedFront || FRONT_PHOTO_FALLBACK,
+        back: storedBack || BACK_PHOTO_FALLBACK,
+      });
+    }, 0);
 
-    if (storedFront) setFrontPhoto(storedFront);
-    if (storedBack) setBackPhoto(storedBack);
+    return () => clearTimeout(readTimer);
   }, []);
 
   return (
-    <div className="capture-page">
-      <button className="capture-back" type="button" aria-label="뒤로">
-        <img src="/figma/icon-chevron-down.svg" alt="" />
-      </button>
-
-      <div className="capture-logo-wrap" aria-hidden="true">
-        <img className="capture-logo" src="/figma/logo-ping.svg" alt="Ping!" />
-      </div>
-
+    <div className="capture-page" style={capturePageStyle}>
       <label className="capture-caption" aria-label="오늘의 Ping! 한 줄 추가하기">
         <textarea
           className="capture-caption-input"
@@ -40,10 +47,10 @@ export default function CameraCapturedPreview() {
       </label>
 
       <section className="capture-photo-card" aria-label="촬영한 사진 미리보기">
-        <img className="capture-photo-main" src={backPhoto} alt="후면 사진" />
+        <img className="capture-photo-main" src={photos.back} alt="후면 사진" />
         <div className="capture-photo-overlay">
           <div className="capture-photo-thumb">
-            <img src={frontPhoto} alt="전면 사진" />
+            <img src={photos.front} alt="전면 사진" />
           </div>
         </div>
       </section>

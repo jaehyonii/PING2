@@ -98,20 +98,16 @@ export default function Home() {
   }, [loadMore, hasMore]);
 
   return (
-    <div className="home">
-      <header className="home-header">
-        <img className="logo" src="/figma/logo-ping.svg" alt="Ping!" />
-        <button className="notify" type="button" aria-label="알림">
-          <img src="/figma/icon-bell.svg" alt="" />
-        </button>
-      </header>
-
+    <div className="home home-screen">
       <div className="home-tabs" role="tablist" aria-label="홈 탭">
         <button className="home-tab is-active" role="tab" aria-selected="true" type="button">
           탐색
         </button>
         <button className="home-tab" role="tab" aria-selected="false" type="button">
           친구들
+        </button>
+        <button className="notify" type="button" aria-label="알림">
+          <img src="/figma/icon-bell.svg" alt="" />
         </button>
       </div>
 

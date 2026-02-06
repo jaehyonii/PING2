@@ -1,29 +1,22 @@
-﻿"use client";
+"use client";
 
 import { FaceDetector, FilesetResolver } from "@mediapipe/tasks-vision";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-const MASK_SOURCES = [
-  "/mask/Popcat.svg",
-  "/mask/Dogecoin.svg",
-  "/mask/Jupiter.svg",
-  "/mask/Memecoin.svg",
-  "/mask/MetaMask.svg",
-  "/mask/Optimism.svg",
-  "/mask/Orca.svg",
-];
-const DEFAULT_MASK_SRC = MASK_SOURCES[0];
+const DEFAULT_MASK_SRC = "/mask/Popcat.svg";
 const FACE_MODEL_URL =
   "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/latest/blaze_face_short_range.tflite";
 const VISION_WASM_BASE = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm";
 const DETECT_INTERVAL_MS = 60;
 const CAMERA_FACING_FRONT = "user";
 const CAMERA_FACING_BACK = "environment";
-const CAMERA_SWITCH_DELAY_MS = 150;
-const CAMERA_READY_TIMEOUT_MS = 2000;
+const CAMERA_READY_TIMEOUT_MS = 5000;
+const CAMERA_SWITCH_DELAY_MS = 450;
 const STORAGE_KEY_FRONT = "ping-camera-front";
 const STORAGE_KEY_BACK = "ping-camera-back";
+
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const getRollAngle = (detection) => {
   const keypoints = detection?.keypoints;
@@ -37,196 +30,213 @@ const getRollAngle = (detection) => {
     if (point.x > right.x) right = point;
   }
 
-  const dx = right.x - left.x;
-  const dy = right.y - left.y;
-  return Math.atan2(dy, dx);
+  return Math.atan2(right.y - left.y, right.x - left.x);
 };
+
+const waitForVideoReady = (video, timeoutMs = CAMERA_READY_TIMEOUT_MS) =>
+  new Promise((resolve) => {
+    if (!video) {
+      resolve(false);
+      return;
+    }
+
+    let done = false;
+    let pollId = null;
+
+    const isReady = () =>
+      video.videoWidth > 0 &&
+      video.videoHeight > 0 &&
+      video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA;
+
+    const finish = (result) => {
+      if (done) return;
+      done = true;
+      video.removeEventListener("loadedmetadata", onReady);
+      video.removeEventListener("loadeddata", onReady);
+      video.removeEventListener("canplay", onReady);
+      video.removeEventListener("playing", onReady);
+      video.removeEventListener("resize", onReady);
+      video.removeEventListener("error", onError);
+      clearTimeout(timeoutId);
+      if (pollId) clearInterval(pollId);
+      resolve(result);
+    };
+
+    const onReady = () => {
+      if (!isReady()) return;
+      finish(true);
+    };
+
+    const onError = () => finish(false);
+    const timeoutId = setTimeout(onError, timeoutMs);
+
+    if (isReady()) {
+      finish(true);
+      return;
+    }
+
+    video.addEventListener("loadedmetadata", onReady);
+    video.addEventListener("loadeddata", onReady);
+    video.addEventListener("canplay", onReady);
+    video.addEventListener("playing", onReady);
+    video.addEventListener("resize", onReady);
+    video.addEventListener("error", onError);
+    pollId = setInterval(onReady, 80);
+  });
 
 export default function CameraPage() {
   const router = useRouter();
   const videoRef = useRef(null);
   const maskCanvasRef = useRef(null);
-  const maskImageRef = useRef(null);
-  const lastDetectionsRef = useRef([]);
   const streamRef = useRef(null);
-  const isCapturingRef = useRef(false);
   const mountedRef = useRef(false);
+  const maskImageRef = useRef(null);
+  const isSequenceRunningRef = useRef(false);
+  const detectorRef = useRef(null);
+  const detectorRafRef = useRef(null);
+  const lastDetectionsRef = useRef([]);
+
   const [isReady, setIsReady] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [statusMessage, setStatusMessage] = useState("");
   const [isFrontCamera, setIsFrontCamera] = useState(true);
+  const [isSequenceRunning, setIsSequenceRunning] = useState(false);
 
-  const stopStream = () => {
-    if (!streamRef.current) return;
-    streamRef.current.getTracks().forEach((track) => track.stop());
-    streamRef.current = null;
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
+  const clearMaskCanvas = useCallback(() => {
+    const canvas = maskCanvasRef.current;
+    const ctx = canvas?.getContext("2d");
+    if (!canvas || !ctx) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }, []);
+
+  const stopStream = useCallback(() => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
     }
-  };
 
-  const waitForVideoReady = (video, timeoutMs = CAMERA_READY_TIMEOUT_MS) =>
-    new Promise((resolve) => {
-      if (!video) {
-        resolve(false);
-        return;
-      }
+    const video = videoRef.current;
+    if (video) {
+      video.pause();
+      video.srcObject = null;
+    }
+  }, []);
 
-      if (video.videoWidth && video.videoHeight) {
-        resolve(true);
-        return;
-      }
-
-      let done = false;
-
-      const cleanup = () => {
-        video.removeEventListener("loadedmetadata", handleReady);
-        video.removeEventListener("loadeddata", handleReady);
-        video.removeEventListener("error", handleError);
-        clearTimeout(timerId);
-      };
-
-      const handleReady = () => {
-        if (done) return;
-        done = true;
-        cleanup();
-        resolve(true);
-      };
-
-      const handleError = () => {
-        if (done) return;
-        done = true;
-        cleanup();
-        resolve(false);
-      };
-
-      const timerId = setTimeout(handleError, timeoutMs);
-
-      video.addEventListener("loadedmetadata", handleReady);
-      video.addEventListener("loadeddata", handleReady);
-      video.addEventListener("error", handleError);
-    });
-
-  const buildConstraints = (facingMode) => [
-    { video: { facingMode: { exact: facingMode } }, audio: false },
-    { video: { facingMode: { ideal: facingMode } }, audio: false },
-  ];
-
-  const findBackCameraId = async () => {
+  const getBackDeviceId = useCallback(async () => {
     if (!navigator?.mediaDevices?.enumerateDevices) return null;
 
     try {
       const devices = await navigator.mediaDevices.enumerateDevices();
       const videoDevices = devices.filter((device) => device.kind === "videoinput");
-      if (!videoDevices.length) return null;
-
       const backDevice = videoDevices.find((device) =>
         /back|rear|environment/i.test(device.label || "")
       );
-      return (backDevice ?? videoDevices[videoDevices.length - 1]).deviceId || null;
-    } catch (error) {
+      return backDevice?.deviceId ?? null;
+    } catch {
       return null;
     }
-  };
+  }, []);
 
-  const requestStream = async (constraintsList) => {
-    let lastError = null;
-    for (const constraints of constraintsList) {
-      try {
-        return await navigator.mediaDevices.getUserMedia(constraints);
-      } catch (error) {
-        lastError = error;
-      }
-    }
-    throw lastError;
-  };
+  const requestCameraStream = useCallback(
+    async (facingMode) => {
+      const constraintsList = [];
 
-  const startCamera = async (facingMode, allowErrorMessage = true) => {
-    if (typeof window === "undefined") return false;
-
-    if (!window.isSecureContext) {
-      if (allowErrorMessage) {
-        setErrorMessage("카메라는 HTTPS 환경에서만 사용할 수 있어요.");
-      }
-      return false;
-    }
-
-    if (!navigator?.mediaDevices?.getUserMedia) {
-      if (allowErrorMessage) {
-        setErrorMessage("브라우저가 카메라를 지원하지 않아요.");
-      }
-      return false;
-    }
-
-    setIsReady(false);
-    if (allowErrorMessage) setErrorMessage("");
-
-    try {
-      stopStream();
-      await new Promise((resolve) => setTimeout(resolve, 80));
-
-      let constraintsList = buildConstraints(facingMode);
       if (facingMode === CAMERA_FACING_BACK) {
-        const backDeviceId = await findBackCameraId();
+        constraintsList.push({ video: { facingMode: { exact: CAMERA_FACING_BACK } }, audio: false });
+        constraintsList.push({ video: { facingMode: CAMERA_FACING_BACK }, audio: false });
+        constraintsList.push({ video: { facingMode: { ideal: CAMERA_FACING_BACK } }, audio: false });
+
+        const backDeviceId = await getBackDeviceId();
         if (backDeviceId) {
-          constraintsList = [
-            ...constraintsList,
-            { video: { deviceId: { exact: backDeviceId } }, audio: false },
-          ];
+          constraintsList.unshift({ video: { deviceId: { exact: backDeviceId } }, audio: false });
+        }
+      } else {
+        constraintsList.push({ video: { facingMode: { exact: CAMERA_FACING_FRONT } }, audio: false });
+        constraintsList.push({ video: { facingMode: CAMERA_FACING_FRONT }, audio: false });
+        constraintsList.push({ video: { facingMode: { ideal: CAMERA_FACING_FRONT } }, audio: false });
+      }
+
+      constraintsList.push({ video: true, audio: false });
+
+      let lastError = null;
+      for (const constraints of constraintsList) {
+        try {
+          return await navigator.mediaDevices.getUserMedia(constraints);
+        } catch (error) {
+          lastError = error;
         }
       }
-      const stream = await requestStream(constraintsList);
 
-      if (!mountedRef.current) {
-        stream.getTracks().forEach((track) => track.stop());
+      throw lastError;
+    },
+    [getBackDeviceId]
+  );
+
+  const startCamera = useCallback(
+    async (facingMode, { showError = true, clearError = true } = {}) => {
+      if (typeof window === "undefined") return false;
+
+      if (!window.isSecureContext) {
+        if (showError) setErrorMessage("카메라는 HTTPS 환경에서만 사용할 수 있어요.");
         return false;
       }
 
-      streamRef.current = stream;
-      const video = videoRef.current;
+      if (!navigator?.mediaDevices?.getUserMedia) {
+        if (showError) setErrorMessage("브라우저가 카메라를 지원하지 않아요.");
+        return false;
+      }
 
-      if (video) {
+      setIsReady(false);
+      if (clearError) setErrorMessage("");
+
+      try {
+        stopStream();
+        await wait(120);
+
+        const stream = await requestCameraStream(facingMode);
+        if (!mountedRef.current) {
+          stream.getTracks().forEach((track) => track.stop());
+          return false;
+        }
+
+        streamRef.current = stream;
+
+        const video = videoRef.current;
+        if (!video) return false;
+
+        video.pause();
+        video.srcObject = null;
         video.srcObject = stream;
         await video.play().catch(() => {});
-      }
 
-      const ready = await waitForVideoReady(video);
-      if (!mountedRef.current) return false;
+        const ready = await waitForVideoReady(video);
+        if (!mountedRef.current) return false;
 
-      setIsReady(ready);
-      setIsFrontCamera(facingMode !== CAMERA_FACING_BACK);
+        setIsFrontCamera(facingMode === CAMERA_FACING_FRONT);
+        setIsReady(ready);
 
-      if (!ready && allowErrorMessage) {
-        setErrorMessage("카메라 화면을 불러오지 못했어요.");
-      }
-
-      return ready;
-    } catch (error) {
-      if (allowErrorMessage) {
-        const errorName = error?.name;
-        if (errorName === "NotAllowedError" || errorName === "SecurityError") {
-          setErrorMessage("카메라 접근 권한을 허용해주세요.");
-        } else if (facingMode === CAMERA_FACING_BACK) {
-          setErrorMessage("후면 카메라를 사용할 수 없어요.");
-        } else {
-          setErrorMessage("카메라를 불러오지 못했어요.");
+        if (!ready && showError) {
+          setErrorMessage("카메라 화면을 불러오지 못했어요.");
         }
+
+        return ready;
+      } catch (error) {
+        if (showError) {
+          if (error?.name === "NotAllowedError" || error?.name === "SecurityError") {
+            setErrorMessage("카메라 접근 권한을 허용해주세요.");
+          } else if (facingMode === CAMERA_FACING_BACK) {
+            setErrorMessage("후면 카메라를 사용할 수 없어요.");
+          } else {
+            setErrorMessage("카메라를 불러오지 못했어요.");
+          }
+        }
+        return false;
       }
-      return false;
-    }
-  };
+    },
+    [requestCameraStream, stopStream]
+  );
 
   useEffect(() => {
-    mountedRef.current = true;
-    startCamera(CAMERA_FACING_FRONT);
-
-    return () => {
-      mountedRef.current = false;
-      stopStream();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
     const image = new Image();
     image.src = DEFAULT_MASK_SRC;
     image.onload = () => {
@@ -235,89 +245,130 @@ export default function CameraPage() {
   }, []);
 
   useEffect(() => {
-    if (!isReady || errorMessage) return;
+    if (!isReady || !isFrontCamera) {
+      lastDetectionsRef.current = [];
+      clearMaskCanvas();
+      return;
+    }
 
+    let cancelled = false;
     let detector = null;
     let animationId = null;
-    let cancelled = false;
     let lastDetectAt = 0;
 
-    const setupDetector = async () => {
-      try {
-        const video = videoRef.current;
-        const canvas = maskCanvasRef.current;
-        if (!video || !canvas) return;
+    const renderLoop = () => {
+      if (cancelled) return;
 
+      const video = videoRef.current;
+      const canvas = maskCanvasRef.current;
+      const maskImage = maskImageRef.current;
+      if (!video || !canvas) {
+        animationId = requestAnimationFrame(renderLoop);
+        detectorRafRef.current = animationId;
+        return;
+      }
+
+      if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
+        canvas.width = video.videoWidth || 1;
+        canvas.height = video.videoHeight || 1;
+      }
+
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        animationId = requestAnimationFrame(renderLoop);
+        detectorRafRef.current = animationId;
+        return;
+      }
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (detector && video.videoWidth && video.videoHeight) {
+        const now = performance.now();
+        if (now - lastDetectAt >= DETECT_INTERVAL_MS) {
+          lastDetectAt = now;
+          const results = detector.detectForVideo(video, now);
+          lastDetectionsRef.current = results?.detections ?? [];
+        }
+      }
+
+      if (maskImage) {
+        for (const detection of lastDetectionsRef.current) {
+          const box = detection?.boundingBox;
+          if (!box) continue;
+
+          const size = Math.max(box.width, box.height) * 1.2;
+          const centerX = box.originX + box.width / 2;
+          const centerY = box.originY + box.height / 2;
+          const angle = getRollAngle(detection);
+
+          ctx.save();
+          ctx.translate(centerX, centerY);
+          ctx.rotate(angle);
+          ctx.drawImage(maskImage, -size / 2, -size / 2, size, size);
+          ctx.restore();
+        }
+      }
+
+      animationId = requestAnimationFrame(renderLoop);
+      detectorRafRef.current = animationId;
+    };
+
+    const setup = async () => {
+      try {
         const vision = await FilesetResolver.forVisionTasks(VISION_WASM_BASE);
+        if (cancelled) return;
+
         detector = await FaceDetector.createFromOptions(vision, {
           baseOptions: { modelAssetPath: FACE_MODEL_URL },
           runningMode: "VIDEO",
           minDetectionConfidence: 0.6,
         });
+        if (cancelled) {
+          detector.close();
+          return;
+        }
 
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
-
-        const renderLoop = () => {
-          if (cancelled) return;
-
-          if (!video.videoWidth || !video.videoHeight) {
-            animationId = requestAnimationFrame(renderLoop);
-            return;
-          }
-
-          if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-          }
-
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-          const now = performance.now();
-          if (now - lastDetectAt >= DETECT_INTERVAL_MS) {
-            lastDetectAt = now;
-            const results = detector.detectForVideo(video, now);
-            lastDetectionsRef.current = results?.detections ?? [];
-          }
-
-          const maskImage = maskImageRef.current;
-          if (maskImage) {
-            for (const detection of lastDetectionsRef.current) {
-              const box = detection?.boundingBox;
-              if (!box) continue;
-
-              const size = Math.max(box.width, box.height) * 1.2;
-              const centerX = box.originX + box.width / 2;
-              const centerY = box.originY + box.height / 2;
-              const angle = getRollAngle(detection);
-
-              ctx.save();
-              ctx.translate(centerX, centerY);
-              ctx.rotate(angle);
-              ctx.drawImage(maskImage, -size / 2, -size / 2, size, size);
-              ctx.restore();
-            }
-          }
-
-          animationId = requestAnimationFrame(renderLoop);
-        };
-
+        detectorRef.current = detector;
         renderLoop();
       } catch (error) {
-        setErrorMessage("얼굴 인식 모델을 불러오지 못했어요.");
+        if (process.env.NODE_ENV !== "production") {
+          console.warn("Face detector initialization failed:", error);
+        }
       }
     };
 
-    setupDetector();
+    setup();
 
     return () => {
       cancelled = true;
       if (animationId) cancelAnimationFrame(animationId);
-      if (detector?.close) detector.close();
-    };
-  }, [isReady, errorMessage]);
+      detectorRafRef.current = null;
+      lastDetectionsRef.current = [];
 
-  const captureFrame = (includeMask, mirror = isFrontCamera) => {
+      if (detector?.close) detector.close();
+      if (detectorRef.current === detector) detectorRef.current = null;
+
+      clearMaskCanvas();
+    };
+  }, [clearMaskCanvas, isFrontCamera, isReady]);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    const initTimer = setTimeout(() => {
+      void startCamera(CAMERA_FACING_FRONT);
+    }, 0);
+
+    return () => {
+      mountedRef.current = false;
+      clearTimeout(initTimer);
+      if (detectorRafRef.current) cancelAnimationFrame(detectorRafRef.current);
+      if (detectorRef.current?.close) detectorRef.current.close();
+      detectorRef.current = null;
+      stopStream();
+    };
+  }, [startCamera, stopStream]);
+
+  const captureFrame = useCallback(({ includeMask, mirror }) => {
     const video = videoRef.current;
     if (!video || !video.videoWidth || !video.videoHeight) return null;
 
@@ -340,55 +391,64 @@ export default function CameraPage() {
     }
 
     return canvas.toDataURL("image/jpeg", 0.92);
-  };
+  }, []);
 
-  const handleShutter = async () => {
-    if (!isReady || isCapturingRef.current) return;
-    if (typeof window === "undefined") return;
+  const handleShutter = useCallback(async () => {
+    if (!isReady || isSequenceRunningRef.current) return;
 
-    isCapturingRef.current = true;
+    isSequenceRunningRef.current = true;
+    setIsSequenceRunning(true);
     setErrorMessage("");
 
-    const frontImage = captureFrame(true, true);
+    try {
+      setStatusMessage("전면 사진 촬영 중...");
+      const frontImage = captureFrame({ includeMask: true, mirror: true });
+      if (!frontImage) {
+        setErrorMessage("전면 사진을 저장하지 못했어요. 다시 시도해주세요.");
+        return;
+      }
 
-    if (!frontImage) {
-      setErrorMessage("전면 사진을 저장하지 못했어요. 다시 시도해주세요.");
-      isCapturingRef.current = false;
-      return;
+      setStatusMessage("후면 카메라로 전환 중...");
+      const backReady = await startCamera(CAMERA_FACING_BACK, {
+        showError: true,
+        clearError: false,
+      });
+      if (!backReady) {
+        await startCamera(CAMERA_FACING_FRONT, { showError: false, clearError: false });
+        return;
+      }
+
+      setStatusMessage("후면 사진 자동 촬영 중...");
+      await wait(CAMERA_SWITCH_DELAY_MS);
+
+      const backImage = captureFrame({ includeMask: false, mirror: false });
+      if (!backImage) {
+        setErrorMessage("후면 사진을 저장하지 못했어요. 다시 시도해주세요.");
+        await startCamera(CAMERA_FACING_FRONT, { showError: false, clearError: false });
+        return;
+      }
+
+      window.sessionStorage.setItem(STORAGE_KEY_FRONT, frontImage);
+      window.sessionStorage.setItem(STORAGE_KEY_BACK, backImage);
+      router.push("/camera/preview");
+    } finally {
+      isSequenceRunningRef.current = false;
+      setIsSequenceRunning(false);
+      setStatusMessage("");
     }
+  }, [captureFrame, isReady, router, startCamera]);
 
-    const backReady = await startCamera(CAMERA_FACING_BACK);
-    if (!backReady) {
-      isCapturingRef.current = false;
-      await startCamera(CAMERA_FACING_FRONT, false);
-      return;
-    }
+  const handleFlipCamera = useCallback(async () => {
+    if (isSequenceRunningRef.current) return;
 
-    await new Promise((resolve) => setTimeout(resolve, CAMERA_SWITCH_DELAY_MS));
-
-    const backImage = captureFrame(false, false);
-    if (!backImage) {
-      setErrorMessage("후면 사진을 저장하지 못했어요. 다시 시도해주세요.");
-      isCapturingRef.current = false;
-      await startCamera(CAMERA_FACING_FRONT, false);
-      return;
-    }
-
-    window.sessionStorage.setItem(STORAGE_KEY_FRONT, frontImage);
-    window.sessionStorage.setItem(STORAGE_KEY_BACK, backImage);
-
-    router.push("/camera/preview");
-  };
+    setStatusMessage("카메라 전환 중...");
+    const targetFacing = isFrontCamera ? CAMERA_FACING_BACK : CAMERA_FACING_FRONT;
+    await startCamera(targetFacing);
+    setStatusMessage("");
+  }, [isFrontCamera, startCamera]);
 
   return (
     <div className="camera-page">
-      <button className="camera-back" type="button" aria-label="뒤로">
-        <img src="/figma/icon-chevron-down.svg" alt="" />
-      </button>
-      <div className="camera-logo-wrap">
-        <img className="camera-logo" src="/figma/logo-ping.svg" alt="Ping!" />
-      </div>
-
       <div className="camera-preview">
         <video
           ref={videoRef}
@@ -397,32 +457,54 @@ export default function CameraPage() {
           playsInline
           muted
         />
+
         <canvas
           ref={maskCanvasRef}
           className={`camera-mask-canvas${isFrontCamera ? " is-mirrored" : ""}`}
           aria-hidden="true"
         />
-        {!isReady && !errorMessage ? (
+
+        {!errorMessage && !isReady ? (
           <div className="camera-preview-status" role="status" aria-live="polite">
             카메라를 준비하는 중이에요...
           </div>
         ) : null}
+
+        {!errorMessage && isReady && statusMessage ? (
+          <div className="camera-preview-status" role="status" aria-live="polite">
+            {statusMessage}
+          </div>
+        ) : null}
+
         {errorMessage ? (
           <div className="camera-preview-status is-error" role="alert">
             {errorMessage}
           </div>
         ) : null}
+
         <div className="camera-preview-overlay">
           <button className="camera-control camera-flash" type="button" aria-label="플래시 끄기">
             <img src="/figma/icon-flash-off.svg" alt="" />
           </button>
-          <button className="camera-control camera-flip" type="button" aria-label="카메라 전환">
+          <button
+            className="camera-control camera-flip"
+            type="button"
+            aria-label="카메라 전환"
+            onClick={handleFlipCamera}
+            disabled={isSequenceRunning}
+          >
             <img src="/figma/icon-flip-camera.svg" alt="" />
           </button>
         </div>
       </div>
 
-      <button className="camera-shutter" type="button" aria-label="촬영" onClick={handleShutter}>
+      <button
+        className="camera-shutter"
+        type="button"
+        aria-label="촬영"
+        onClick={handleShutter}
+        disabled={!isReady || isSequenceRunning}
+      >
         <img src="/figma/camera-shutter.svg" alt="" />
       </button>
     </div>

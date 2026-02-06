@@ -46,7 +46,11 @@ button {
   display: flex;
   flex-direction: column;
   gap: 18px;
-  padding: 36px 20px 0;
+  padding: 0 20px 0;
+}
+
+.home.home-screen {
+  margin-top: -24px;
 }
 
 .home-header {
@@ -73,11 +77,20 @@ button {
   height: 24px;
 }
 
+.home-tabs .notify {
+  margin-left: auto;
+}
+
 .home-tabs {
   display: flex;
   gap: 16px;
   font-size: 16px;
   font-weight: 700;
+  position: sticky;
+  top: 0;
+  z-index: 8;
+  background: var(--bg);
+  padding: 16px 0 8px;
 }
 
 .home-tab {
@@ -371,6 +384,12 @@ button {
     calc(var(--camera-available-height) * 375 / 507)
   );
   --camera-preview-height: calc(var(--camera-preview-width) * 507 / 375);
+  --camera-preview-top: calc(
+    var(--camera-logo-top) +
+    var(--camera-logo-height) +
+    var(--camera-gap) -
+    20px
+  );
 }
 
 .camera-back {
@@ -409,7 +428,7 @@ button {
 
 .camera-preview {
   position: absolute;
-  top: calc(var(--camera-logo-top) + var(--camera-logo-height) + var(--camera-gap));
+  top: var(--camera-preview-top);
   left: 50%;
   transform: translateX(-50%);
   width: var(--camera-preview-width);
@@ -526,40 +545,45 @@ button {
 }
 
 .capture-page {
-  min-height: 100vh;
-  height: 100vh;
-  min-height: 100svh;
-  height: 100svh;
+  --capture-vh: var(--capture-locked-height, 100svh);
+  min-height: var(--capture-vh);
+  height: var(--capture-vh);
   background: var(--bg);
   color: var(--text);
   max-width: 375px;
   margin: 0 auto;
   position: relative;
-  --capture-bottom-pad: clamp(16px, 3svh, 24px);
+  --capture-bottom-pad: clamp(12px, calc(var(--capture-vh) * 0.03), 24px);
   padding: 0 0 var(--capture-bottom-pad);
   overflow: hidden;
   --capture-logo-height: 25px;
-  --capture-logo-top: clamp(18px, 5svh, 40px);
-  --capture-caption-height: 20px;
-  --capture-caption-top: calc(
+  --capture-logo-top: clamp(18px, calc(var(--capture-vh) * 0.05), 40px);
+  --capture-gap: clamp(18px, calc(var(--capture-vh) * 0.04), 40px);
+  --capture-shutter-size: clamp(64px, calc(var(--capture-vh) * 0.09), 72px);
+  --capture-preview-top: calc(
     var(--capture-logo-top) +
     var(--capture-logo-height) +
-    clamp(16px, 4svh, 28px)
+    var(--capture-gap) -
+    20px
   );
-  --capture-preview-top: calc(
-    var(--capture-caption-top) +
-    var(--capture-caption-height) +
-    clamp(16px, 4svh, 28px)
+  --capture-caption-height: 28px;
+  --capture-caption-gap: clamp(12px, calc(var(--capture-vh) * 0.025), 20px);
+  --capture-caption-top: calc(
+    var(--capture-preview-top) -
+    var(--capture-caption-height) -
+    var(--capture-caption-gap)
   );
-  --capture-preview-gap-bottom: clamp(12px, 3svh, 24px);
-  --capture-action-height: clamp(56px, 9svh, 72px);
+  --capture-preview-gap-bottom: var(--capture-gap);
+  --capture-action-height: var(--capture-shutter-size);
   --capture-preview-available-height: max(
     0px,
     calc(
-      100svh -
-      var(--capture-preview-top) -
-      var(--capture-preview-gap-bottom) -
-      var(--capture-action-height) -
+      var(--capture-vh) -
+      var(--capture-logo-top) -
+      var(--capture-logo-height) -
+      var(--capture-gap) -
+      var(--capture-gap) -
+      var(--capture-shutter-size) -
       var(--capture-bottom-pad)
     )
   );
@@ -619,12 +643,13 @@ button {
   width: 100%;
   background: transparent;
   border: 0;
-  padding: 0;
+  min-height: var(--capture-caption-height);
+  padding: 2px 0;
   resize: none;
   color: var(--text);
   font-size: 16px;
   font-weight: 600;
-  line-height: 1;
+  line-height: 1.25;
   font-family: inherit;
   outline: none;
 }
@@ -695,7 +720,7 @@ button {
 
 .capture-action-note {
   margin: 0;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   line-height: 1;
   color: var(--muted);
