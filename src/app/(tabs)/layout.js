@@ -8,22 +8,26 @@ const tabs = [
     href: "/",
     label: "홈",
     icon: "/figma/nav-home.svg",
+    iconClass: "tab-icon-home",
   },
   {
     href: "/events",
     label: "이벤트",
     icon: "/figma/nav-events.svg",
+    iconClass: "tab-icon-events",
   },
   {
     href: "/camera/shot",
     label: "",
     icon: "/figma/nav-camera.svg",
+    iconClass: "tab-icon-camera",
     isCenter: true,
   },
   {
     href: "/leaderboard",
     label: "리워드",
     icon: "/figma/nav-leaderboard.svg",
+    iconClass: "tab-icon-leaderboard",
   },
   {
     href: "/profile",
@@ -51,7 +55,7 @@ export default function TabsLayout({ children }) {
             >
               {tab.isCenter ? (
                 <span className="tab-center-icon">
-                  <img src={tab.icon} alt="" />
+                  <img src={tab.icon} alt="" className={tab.iconClass} />
                 </span>
               ) : tab.isAvatar ? (
                 <span className="tab-avatar">
@@ -59,7 +63,7 @@ export default function TabsLayout({ children }) {
                 </span>
               ) : (
                 <span className="tab-icon">
-                  <img src={tab.icon} alt="" />
+                  <img src={tab.icon} alt="" className={tab.iconClass} />
                 </span>
               )}
               {tab.label && <span className="tab-label">{tab.label}</span>}

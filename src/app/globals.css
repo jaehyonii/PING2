@@ -5,6 +5,7 @@
   --text: #f9f9f9;
   --muted: #a3a3a3;
   --pink: #ff0064;
+  --tab-accent: #00bfdc;
 }
 
 * {
@@ -259,7 +260,7 @@ button {
 
 .tab {
   text-decoration: none;
-  color: var(--pink);
+  color: var(--tab-accent);
   font-size: 8px;
   font-weight: 500;
   display: flex;
@@ -270,6 +271,17 @@ button {
 
 .tab-icon img {
   width: 18px;
+  height: 18px;
+}
+
+.tab-icon img.tab-icon-home,
+.tab-icon img.tab-icon-events {
+  width: 16px;
+  height: 17.5px;
+}
+
+.tab-icon img.tab-icon-leaderboard {
+  width: 20px;
   height: 18px;
 }
 
@@ -285,7 +297,7 @@ button {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: var(--pink);
+  background: var(--tab-accent);
   display: grid;
   place-items: center;
 }
