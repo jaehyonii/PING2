@@ -61,7 +61,8 @@ export default function AuthWrapper({ children }) {
 
     useEffect(() => {
         // Only attempt sign in after StartScreen is finished and MiniKit is installed
-        if (!showStartScreen && isInstalled) {
+        // if (!showStartScreen && isInstalled) {
+        if (isInstalled) {
             signInWithWallet().then(() => {
                 if (MiniKit.user) {
                     setIsAuthenticated(true);

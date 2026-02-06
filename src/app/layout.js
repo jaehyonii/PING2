@@ -2,7 +2,7 @@
 import { MiniKitProvider } from "@worldcoin/minikit-js/minikit-provider";
 import AuthWrapper from "../components/AuthWrapper";
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
 
 	return (
 		<html lang="ko">
