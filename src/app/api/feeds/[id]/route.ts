@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { toProfilesStorageUrl } from "@/lib/supabaseStorage";
 
 interface FeedRow {
   feed_id: string;
@@ -44,7 +45,7 @@ const toFeedCard = (row: FeedRow, user: UserRow | undefined) => {
     wallet_address: row.wallet_address,
     user: user?.nickname?.trim() || fallbackWalletLabel,
     meta: row.caption?.trim() || "오늘의 Ping!",
-    avatar: user?.profile_url?.trim() || "/figma/home/avatar-default.png",
+    avatar: toProfilesStorageUrl(user?.profile_url?.trim()) || "/figma/home/avatar-default.png",
     image: row.back_url,
     overlay: row.front_url,
     caption: row.caption || "",

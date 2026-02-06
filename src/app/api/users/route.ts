@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { toProfilesStorageUrl } from "@/lib/supabaseStorage";
 
 export async function GET(req: NextRequest) {
   try {
@@ -58,7 +59,14 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ status: "success", user: null }, { status: 200 });
     }
 
-    return NextResponse.json({ status: "success", user: rows[0] }, { status: 200 });
+    const row = rows[0];
+    const user = {
+      ...row,
+      profile_url: toProfilesStorageUrl(row.profile_url),
+      background_url: toProfilesStorageUrl(row.background_url),
+    };
+
+    return NextResponse.json({ status: "success", user }, { status: 200 });
   } catch (error: any) {
     return NextResponse.json(
       { status: "error", message: error?.message ?? "Unknown error" },

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { MiniKit } from "@worldcoin/minikit-js";
+import { getProfilesAssetUrl } from "@/lib/supabaseStorage";
 
 const PUBLIC_PINGS = [
   "/figma/profile/profile-public-ping-1.png",
@@ -75,8 +76,9 @@ export default function ProfilePage() {
 
   const walletNickname = MiniKit.user?.username?.trim() || "";
   const fallbackName = walletNickname || "Me";
-  const fallbackImage = MiniKit.user?.profilePictureUrl || "/profiles/profile-default.png";
-  const fallbackAvatar = MiniKit.user?.profilePictureUrl || "/figma/home/profile-default.png";
+  const storageFallbackProfile = getProfilesAssetUrl("profile-default.jpg");
+  const fallbackImage = MiniKit.user?.profilePictureUrl || storageFallbackProfile;
+  const fallbackAvatar = MiniKit.user?.profilePictureUrl || storageFallbackProfile;
   const fallbackWallet = MiniKit.user?.walletAddress?.toLowerCase() || "";
 
   const nickname = userRow?.nickname || fallbackName;
