@@ -1,19 +1,8 @@
-﻿'use client';
-
-import { useEffect } from "react";
-import "./globals.css";
+﻿import "./globals.css";
 import { MiniKitProvider } from "@worldcoin/minikit-js/minikit-provider";
 import AuthWrapper from "../components/AuthWrapper";
 
 export default function RootLayout({ children }) {
-	useEffect(() => {
-		const script = document.createElement('script')
-		script.src = 'https://cdn.jsdelivr.net/npm/eruda'
-		script.onload = () => {
-			window.eruda.init()
-		}
-		document.body.appendChild(script)
-	}, [])
 
 	return (
 		<html lang="ko">
