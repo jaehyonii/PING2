@@ -42,9 +42,8 @@ export default function PingModal({ isOpen, onClose, onConfirm }) {
                 {/* Close Button */}
                 <button
                     onClick={onClose}
-                    className="text-[14px] text-[#a3a3a3] font-medium py-[8px] px-[16px]"
                 >
-                    닫기
+                    <span className="text-[16px] font-bold text-white">닫기</span>
                 </button>
 
                 {/* Footer Note */}

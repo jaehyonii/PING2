@@ -27,9 +27,11 @@ export default function PingToast({ isVisible, onClose }) {
                 {/* Cancel Button */}
                 <button
                     onClick={onClose}
-                    className="text-[10px] text-[#00BFDC] font-medium whitespace-nowrap"
+                    className="inline-flex items-center shrink-0 min-w-max"
                 >
-                    취소하기
+                    <span className="text-[12px] text-[#f9f9f9] font-medium leading-none whitespace-nowrap">
+                        취소하기
+                    </span>
                 </button>
             </div>
         </div>
