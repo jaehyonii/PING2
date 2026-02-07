@@ -48,7 +48,7 @@ export default function CameraSelectPage() {
 
         <button className="camera-select-search" type="button" aria-label="체인 검색">
           <img src="/figma/events/icon-search-muted.svg" alt="" />
-          <span>체인을 검색하세요!</span>
+          <span>앱을 검색하세요!</span>
         </button>
 
         <div className="camera-select-filter-row">
