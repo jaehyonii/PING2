@@ -1,14 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Buffer } from "node:buffer";
-import { mkdir, writeFile } from "node:fs/promises";
-import path from "node:path";
-import { toProfilesStorageUrl } from "@/lib/supabaseStorage";
+import { getFeedsAssetUrl, toFeedsStorageUrl, toProfilesStorageUrl } from "@/lib/supabaseStorage";
 
 interface CreateFeedBody {
   walletAddress?: string;
   frontImage?: string;
   backImage?: string;
   caption?: string | null;
+}
+
+interface ParsedImageData {
+  ext: string;
+  buffer: Buffer;
 }
 
 interface FeedRow {
@@ -35,6 +38,16 @@ const MIME_TO_EXT: Record<string, string> = {
   "image/png": "png",
   "image/webp": "webp",
 };
+const EXT_TO_MIME: Record<string, string> = {
+  jpg: "image/jpeg",
+  png: "image/png",
+  webp: "image/webp",
+};
+
+const FEEDS_BUCKET =
+  process.env.SUPABASE_FEEDS_BUCKET ||
+  process.env.NEXT_PUBLIC_SUPABASE_FEEDS_BUCKET ||
+  "feeds";
 
 const getSupabaseConfig = () => {
   const supabaseUrl = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "").replace(/\/+$/, "");
@@ -65,7 +78,7 @@ const createFeedId = () => {
   return `feed-${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
 };
 
-const parseImageDataUrl = (raw: string | undefined) => {
+const parseImageDataUrl = (raw: string | undefined): ParsedImageData | null => {
   if (!raw) return null;
   const match = raw.match(DATA_URL_PATTERN);
   if (!match) return null;
@@ -83,6 +96,39 @@ const parseImageDataUrl = (raw: string | undefined) => {
   }
 };
 
+const encodeObjectPath = (objectPath: string) =>
+  objectPath
+    .split("/")
+    .map((segment) => encodeURIComponent(segment))
+    .join("/");
+
+const uploadFeedObject = async (
+  config: NonNullable<ReturnType<typeof getSupabaseConfig>>,
+  fileName: string,
+  image: ParsedImageData
+) => {
+  const contentType = EXT_TO_MIME[image.ext] || "application/octet-stream";
+  const uploadUrl = `${config.supabaseUrl}/storage/v1/object/${encodeURIComponent(
+    FEEDS_BUCKET
+  )}/${encodeObjectPath(fileName)}`;
+
+  const response = await fetch(uploadUrl, {
+    method: "POST",
+    headers: {
+      apikey: config.supabaseServiceRoleKey,
+      Authorization: `Bearer ${config.supabaseServiceRoleKey}`,
+      "x-upsert": "true",
+      "Content-Type": contentType,
+    },
+    body: image.buffer as unknown as BodyInit,
+  });
+
+  if (response.ok) return;
+
+  const detail = await response.text();
+  throw new Error(`Supabase storage upload failed (${fileName}): ${detail}`);
+};
+
 const toFeedCard = (row: FeedRow, user: UserRow | undefined) => {
   const fallbackWalletLabel = row.wallet_address ? `user-${row.wallet_address.slice(2, 8)}` : "user";
 
@@ -93,8 +139,8 @@ const toFeedCard = (row: FeedRow, user: UserRow | undefined) => {
     user: user?.nickname?.trim() || fallbackWalletLabel,
     meta: row.caption?.trim() || "오늘의 Ping!",
     avatar: toProfilesStorageUrl(user?.profile_url?.trim()) || "/figma/home/avatar-default.png",
-    image: row.back_url,
-    overlay: row.front_url,
+    image: toFeedsStorageUrl(row.back_url) || row.back_url,
+    overlay: toFeedsStorageUrl(row.front_url) || row.front_url,
     caption: row.caption || "",
     created_at: row.created_at,
   };
@@ -202,16 +248,14 @@ export async function POST(req: NextRequest) {
 
     const walletAddress = rawWallet.toLowerCase();
     const feedId = createFeedId();
-    const feedsDirPath = path.join(process.cwd(), "public", "feeds");
     const frontFileName = `${feedId}-front.${frontImage.ext}`;
     const backFileName = `${feedId}-back.${backImage.ext}`;
-    const frontUrl = `/feeds/${frontFileName}`;
-    const backUrl = `/feeds/${backFileName}`;
+    const frontUrl = getFeedsAssetUrl(frontFileName);
+    const backUrl = getFeedsAssetUrl(backFileName);
 
-    await mkdir(feedsDirPath, { recursive: true });
     await Promise.all([
-      writeFile(path.join(feedsDirPath, frontFileName), frontImage.buffer),
-      writeFile(path.join(feedsDirPath, backFileName), backImage.buffer),
+      uploadFeedObject(config, frontFileName, frontImage),
+      uploadFeedObject(config, backFileName, backImage),
     ]);
 
     const response = await fetch(`${config.supabaseUrl}/rest/v1/feeds`, {

@@ -7,8 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "ngrok": "ngrok http 3000",
-    "storage:upload-profiles": "node scripts/upload-profiles-to-storage.mjs"
+    "ngrok": "ngrok http 3000"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "latest",

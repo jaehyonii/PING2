@@ -3,9 +3,10 @@
 import { MiniKit } from "@worldcoin/minikit-js";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { getFeedsAssetUrl } from "@/lib/supabaseStorage";
 
-const FRONT_PHOTO_FALLBACK = "/feeds/Feed_selfie_01.png";
-const BACK_PHOTO_FALLBACK = "/feeds/Feed_scene_01.png";
+const FRONT_PHOTO_FALLBACK = getFeedsAssetUrl("Feed_selfie_01.png");
+const BACK_PHOTO_FALLBACK = getFeedsAssetUrl("Feed_scene_01.png");
 const STORAGE_KEY_FRONT = "ping-camera-front";
 const STORAGE_KEY_BACK = "ping-camera-back";
 const isDataImageUrl = (value) => typeof value === "string" && value.startsWith("data:image/");
