@@ -4,15 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import { MiniKit } from "@worldcoin/minikit-js";
 import { getProfilesAssetUrl } from "@/lib/supabaseStorage";
 
-const PUBLIC_PINGS = [
-  "/figma/profile/profile-public-ping-1.png",
-  "/figma/profile/profile-public-ping-2.png",
-  "/figma/profile/profile-public-ping-3.png",
-  "/figma/profile/profile-public-ping-4.png",
-  "/figma/profile/profile-public-ping-5.png",
-  "/figma/profile/profile-public-ping-1.png",
-];
-
 const shortenWallet = (walletAddress) => {
   if (!walletAddress || walletAddress.length < 10) return walletAddress || "";
   return `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`;
@@ -21,12 +12,16 @@ const shortenWallet = (walletAddress) => {
 export default function ProfilePage() {
   const [userRow, setUserRow] = useState(null);
   const [isLoadingUser, setIsLoadingUser] = useState(true);
+  const [publicPings, setPublicPings] = useState([]);
+  const [isLoadingPings, setIsLoadingPings] = useState(true);
 
   useEffect(() => {
     const walletAddress = MiniKit.user?.walletAddress;
 
     if (!walletAddress) {
       setIsLoadingUser(false);
+      setIsLoadingPings(false);
+      setPublicPings([]);
       return;
     }
 
@@ -67,7 +62,49 @@ export default function ProfilePage() {
       }
     };
 
+    const fetchMyFeeds = async () => {
+      try {
+        const response = await fetch(
+          `/api/feeds?walletAddress=${encodeURIComponent(walletAddress)}&limit=100`,
+          { method: "GET", cache: "no-store" }
+        );
+
+        if (!response.ok) {
+          const detail = await response.text();
+          console.error("Failed to fetch my feeds:", detail);
+          if (!isCancelled) setPublicPings([]);
+          return;
+        }
+
+        const data = await response.json();
+        const myPings = Array.isArray(data?.feeds)
+          ? data.feeds
+              .map((feed, index) => {
+                const image = typeof feed?.image === "string" ? feed.image.trim() : "";
+                const overlay = typeof feed?.overlay === "string" ? feed.overlay.trim() : "";
+                if (!image) return null;
+                return {
+                  id: feed?.id || feed?.feed_id || `${walletAddress}-${index}`,
+                  image,
+                  overlay: overlay || null,
+                };
+              })
+              .filter(Boolean)
+          : [];
+
+        if (!isCancelled) {
+          setPublicPings(myPings);
+        }
+      } catch (error) {
+        console.error("Error while fetching my feeds:", error);
+        if (!isCancelled) setPublicPings([]);
+      } finally {
+        if (!isCancelled) setIsLoadingPings(false);
+      }
+    };
+
     fetchUser();
+    fetchMyFeeds();
 
     return () => {
       isCancelled = true;
@@ -138,12 +175,20 @@ export default function ProfilePage() {
 
         <h2 className="profile-section-title">Public Ping!</h2>
         <div className="profile-grid">
-          {PUBLIC_PINGS.map((image, index) => (
-            <div className="profile-grid-item" key={`${image}-${index}`}>
-              <img src={image} alt="" />
+          {publicPings.map((ping, index) => (
+            <div className="profile-grid-item" key={`${ping.id}-${index}`}>
+              <img className="profile-grid-main" src={ping.image} alt={`Public Ping ${index + 1}`} />
+              {ping.overlay ? (
+                <div className="profile-grid-overlay" aria-hidden="true">
+                  <img src={ping.overlay} alt="" />
+                </div>
+              ) : null}
             </div>
           ))}
         </div>
+        {!isLoadingPings && publicPings.length === 0 ? (
+          <p className="profile-id">No Public Ping yet.</p>
+        ) : null}
       </div>
     </section>
   );

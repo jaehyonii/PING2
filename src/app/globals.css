@@ -906,6 +906,7 @@ button {
 }
 
 .profile-grid-item {
+  position: relative;
   width: 100%;
   aspect-ratio: 102.603 / 136.805;
   border-radius: 6.071px;
@@ -913,7 +914,25 @@ button {
   background: #232323;
 }
 
-.profile-grid-item img {
+.profile-grid-main {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-grid-overlay {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 30%;
+  aspect-ratio: 107 / 144;
+  border-radius: 6px;
+  border: 1.5px solid #000000;
+  overflow: hidden;
+  background: #f3f3f3;
+}
+
+.profile-grid-overlay img {
   width: 100%;
   height: 100%;
   object-fit: cover;

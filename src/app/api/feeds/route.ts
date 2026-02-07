@@ -161,11 +161,15 @@ export async function GET(req: NextRequest) {
 
     const limitRaw = Number(req.nextUrl.searchParams.get("limit") || "100");
     const limit = Number.isFinite(limitRaw) ? Math.min(Math.max(Math.floor(limitRaw), 1), 200) : 100;
+    const walletAddressFilter = req.nextUrl.searchParams.get("walletAddress")?.trim().toLowerCase() || "";
 
     const feedsUrl = new URL(`${config.supabaseUrl}/rest/v1/feeds`);
     feedsUrl.searchParams.set("select", "feed_id,wallet_address,front_url,back_url,caption,created_at");
     feedsUrl.searchParams.set("order", "created_at.desc");
     feedsUrl.searchParams.set("limit", String(limit));
+    if (walletAddressFilter) {
+      feedsUrl.searchParams.set("wallet_address", `eq.${walletAddressFilter}`);
+    }
 
     const feedsResponse = await fetch(feedsUrl.toString(), {
       method: "GET",
