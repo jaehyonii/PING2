@@ -29,6 +29,11 @@ interface UserRow {
   profile_url: string | null;
 }
 
+interface PointRow {
+  wallet_address: string;
+  ping_point: number | string | null;
+}
+
 export const runtime = "nodejs";
 
 const DATA_URL_PATTERN = /^data:(image\/[a-zA-Z0-9.+-]+);base64,([A-Za-z0-9+/=]+)$/;
@@ -127,6 +132,77 @@ const uploadFeedObject = async (
 
   const detail = await response.text();
   throw new Error(`Supabase storage upload failed (${fileName}): ${detail}`);
+};
+
+const incrementPingPoint = async (
+  config: NonNullable<ReturnType<typeof getSupabaseConfig>>,
+  walletAddress: string
+) => {
+  const pointsUrl = new URL(`${config.supabaseUrl}/rest/v1/points`);
+  pointsUrl.searchParams.set("select", "wallet_address,ping_point");
+  pointsUrl.searchParams.set("wallet_address", `eq.${walletAddress}`);
+  pointsUrl.searchParams.set("limit", "1");
+
+  const currentResponse = await fetch(pointsUrl.toString(), {
+    method: "GET",
+    headers: config.headers,
+    cache: "no-store",
+  });
+
+  if (!currentResponse.ok) {
+    const detail = await currentResponse.text();
+    throw new Error(`Supabase points query failed: ${detail}`);
+  }
+
+  const rows = (await currentResponse.json()) as PointRow[];
+  if (!rows.length) {
+    const createResponse = await fetch(`${config.supabaseUrl}/rest/v1/points?on_conflict=wallet_address`, {
+      method: "POST",
+      headers: {
+        ...config.headers,
+        Prefer: "resolution=merge-duplicates,return=representation",
+      },
+      body: JSON.stringify([
+        {
+          wallet_address: walletAddress,
+          ping_point: 1,
+        },
+      ]),
+    });
+
+    if (!createResponse.ok) {
+      const detail = await createResponse.text();
+      throw new Error(`Supabase points create failed: ${detail}`);
+    }
+
+    return 1;
+  }
+
+  const currentPoint = Number(rows[0].ping_point ?? 0);
+  const nextPoint = (Number.isFinite(currentPoint) ? currentPoint : 0) + 25; // 임시값 25
+
+  const updateUrl = new URL(`${config.supabaseUrl}/rest/v1/points`);
+  updateUrl.searchParams.set("select", "wallet_address,ping_point");
+  updateUrl.searchParams.set("wallet_address", `eq.${walletAddress}`);
+  updateUrl.searchParams.set("limit", "1");
+
+  const updateResponse = await fetch(updateUrl.toString(), {
+    method: "PATCH",
+    headers: {
+      ...config.headers,
+      Prefer: "return=representation",
+    },
+    body: JSON.stringify({
+      ping_point: nextPoint,
+    }),
+  });
+
+  if (!updateResponse.ok) {
+    const detail = await updateResponse.text();
+    throw new Error(`Supabase points update failed: ${detail}`);
+  }
+
+  return nextPoint;
 };
 
 const toFeedCard = (row: FeedRow, user: UserRow | undefined) => {
@@ -290,9 +366,10 @@ export async function POST(req: NextRequest) {
     const rows = (await response.json()) as FeedRow[];
     const inserted = rows?.[0];
     const feed = inserted ? toFeedCard(inserted, undefined) : null;
+    const pingPoint = await incrementPingPoint(config, walletAddress);
 
     return NextResponse.json(
-      { status: "success", feed },
+      { status: "success", feed, point: { wallet_address: walletAddress, ping_point: pingPoint } },
       { status: 201 }
     );
   } catch (error) {
