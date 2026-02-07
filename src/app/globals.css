@@ -1146,7 +1146,7 @@ button {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 0;
+  bottom: -12;
   min-height: 52px;
   padding: 6px 6px 8px;
   backdrop-filter: blur(1.5px);

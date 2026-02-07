@@ -2,15 +2,15 @@ import Link from "next/link";
 
 const HOT_PINGS = [
   {
-    image: "/figma/events/events-hot-ping-1.png",
+    image: "/figma/events/hotping1.jpg",
     lines: ["친구랑 광고보고", "리워드 수령까지~"],
   },
   {
-    image: "/figma/events/events-hot-ping-2.png",
+    image: "/figma/events/hotping2.png",
     lines: ["발급 받은 기프트로", "들어온 편의점에서 한 컷"],
   },
   {
-    image: "/figma/events/events-hot-ping-3.png",
+    image: "/figma/events/hotping3.png",
     lines: ["카페에서 바우처", "사용하고 한 장"],
   },
 ];
