@@ -3,32 +3,32 @@ import Link from "next/link";
 const MASK_CARDS = [
   {
     title: "MADS",
-    imageUrl: "/figma/camera/select/05c278ab1866558209b2cada594f61d1b1fff129.png",
+    imageUrl: "/figma/camera/select/hotping-mad.jpg",
     objectPosition: "left center",
   },
   {
     title: "Credits",
-    imageUrl: "/figma/camera/select/f4e8e03800d65093c8a9425fa4cc021458e16688.png",
+    imageUrl: "/figma/camera/select/hotping-credit.png",
     objectPosition: "center top",
   },
   {
     title: "Worldcoin",
-    imageUrl: "/figma/camera/select/2dfb4854b0f211c6fbd6e2e6cc074a8ac3835929.png",
+    imageUrl: "/figma/camera/select/hotping-world.png",
     objectPosition: "center top",
   },
   {
     title: "Gift Card",
-    imageUrl: "/figma/camera/select/96a3939155d33d69e6abd21ce17e510018e15c15.png",
+    imageUrl: "/figma/camera/select/hotping-gift.png",
     objectPosition: "left center",
   },
   {
     title: "Deals",
-    imageUrl: "/figma/camera/select/85bc5ea1515cf999e4fd7a3a503351db207e5b66.png",
+    imageUrl: "/figma/camera/select/hotping-deal.png",
     objectPosition: "center top",
   },
   {
     title: "Uno",
-    imageUrl: "/figma/camera/select/3fc452dab33006dc0a8fa1b673cfa8cbd4d354d4.png",
+    imageUrl: "/figma/camera/select/hotping-uno.png",
     objectPosition: "center top",
   },
 ];
