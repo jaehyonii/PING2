@@ -4,6 +4,7 @@ import { MiniKit } from "@worldcoin/minikit-js";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getFeedsAssetUrl } from "@/lib/supabaseStorage";
+import UploadSuccessModal from "@/components/UploadSuccessModal";
 
 const FRONT_PHOTO_FALLBACK = getFeedsAssetUrl("Feed_selfie_01.png");
 const BACK_PHOTO_FALLBACK = getFeedsAssetUrl("Feed_scene_01.png");
@@ -23,6 +24,7 @@ export default function CameraCapturedPreview() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const capturePageStyle =
     lockedHeight !== null
@@ -84,13 +86,18 @@ export default function CameraCapturedPreview() {
         window.sessionStorage.removeItem(STORAGE_KEY_BACK);
       }
 
-      router.push("/feed/all");
+      setShowSuccessModal(true);
     } catch (error) {
       const message = error instanceof Error ? error.message : "";
       setSubmitError(message || "업로드에 실패했어요. 잠시 후 다시 시도해주세요.");
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleModalConfirm = () => {
+    setShowSuccessModal(false);
+    router.push("/feed/all");
   };
 
   return (
@@ -128,6 +135,12 @@ export default function CameraCapturedPreview() {
           <img src="/figma/camera/preview/icon-sand.svg" alt="" />
         </button>
       </div>
+
+      <UploadSuccessModal
+        isOpen={showSuccessModal}
+        onConfirm={handleModalConfirm}
+        onClose={handleModalConfirm}
+      />
     </div>
   );
 }
